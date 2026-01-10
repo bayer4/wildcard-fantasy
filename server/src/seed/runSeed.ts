@@ -167,7 +167,7 @@ export function runBcflSeed(force: boolean = false): {
       db.prepare(`
         INSERT INTO users (id, email, password_hash, role)
         VALUES (?, ?, ?, ?)
-      `).run(adminId, 'admin@bcfl.com', passwordHash, 'admin');
+      `).run(adminId, 'admin@bcfl.com', passwordHash, 'ADMIN');
       console.log('Created default admin user: admin@bcfl.com / admin');
     }
   });
