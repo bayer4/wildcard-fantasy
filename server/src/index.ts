@@ -25,28 +25,40 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(express.json({ limit: '10mb' })); // Increased limit for stats ingest
-// CORS configuration - add your production domain here
+
+// CORS configuration
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   process.env.CLIENT_URL, // Set this in production
 ].filter(Boolean) as string[];
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 
-// Health check
-app.get('/', (req: Request, res: Response) => {
-  res.send('Wildcard Fantasy API running');
-});
+/**
+ * IMPORTANT ORDERING:
+ * - Register API routes first (/api/...)
+ * - Then, in production, serve the built client for everything else
+ */
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/team', teamRoutes);
+app.use('/api/scores', scoresRoutes);
 
 // Public games endpoint (no auth required)
 app.get('/api/games', (req: Request, res: Response) => {
   const week = parseInt(req.query.week as string) || 1;
-  
-  const games = db.prepare(`
+
+  const games = db
+    .prepare(
+      `
     SELECT 
       id,
       week,
@@ -61,7 +73,9 @@ app.get('/api/games', (req: Request, res: Response) => {
     FROM games 
     WHERE week = ?
     ORDER BY kickoff_time ASC
-  `).all(week);
+  `
+    )
+    .all(week);
 
   res.json({ week, games });
 });
@@ -70,8 +84,9 @@ app.get('/api/games', (req: Request, res: Response) => {
 app.get('/api/public/scoreboard/:week', (req: Request, res: Response) => {
   const weekNum = parseInt(req.params.week) || 1;
 
-  // Get all teams with scores grouped by conference
-  const teams = db.prepare(`
+  const teams = db
+    .prepare(
+      `
     SELECT 
       t.id,
       t.name,
@@ -85,7 +100,9 @@ app.get('/api/public/scoreboard/:week', (req: Request, res: Response) => {
     JOIN conferences c ON t.conference_id = c.id
     LEFT JOIN team_scores ts ON t.id = ts.team_id AND ts.week = ?
     ORDER BY c.name, COALESCE(ts.starter_points, 0) DESC
-  `).all(weekNum, weekNum) as Array<{
+  `
+    )
+    .all(weekNum, weekNum) as Array<{
     id: string;
     name: string;
     conference_id: string;
@@ -94,7 +111,6 @@ app.get('/api/public/scoreboard/:week', (req: Request, res: Response) => {
     starters_count: number;
   }>;
 
-  // Group by conference
   const conferences: Record<string, { id: string; name: string; teams: any[] }> = {};
 
   for (const team of teams) {
@@ -120,18 +136,29 @@ app.get('/api/public/scoreboard/:week', (req: Request, res: Response) => {
 
 // Helper: get game info for a player's NFL team
 function getPublicGameInfo(nflTeam: string, week: number) {
-  const game = db.prepare(`
+  const game = db
+    .prepare(
+      `
     SELECT 
       id, home_team_abbr, away_team_abbr, kickoff_time, status,
       home_score, away_score, spread_home, total
     FROM games 
     WHERE week = ? AND (home_team_abbr = ? OR away_team_abbr = ?)
-  `).get(week, nflTeam, nflTeam) as {
-    id: string; home_team_abbr: string; away_team_abbr: string;
-    kickoff_time: string; status: string;
-    home_score: number | null; away_score: number | null;
-    spread_home: number | null; total: number | null;
-  } | undefined;
+  `
+    )
+    .get(week, nflTeam, nflTeam) as
+    | {
+        id: string;
+        home_team_abbr: string;
+        away_team_abbr: string;
+        kickoff_time: string;
+        status: string;
+        home_score: number | null;
+        away_score: number | null;
+        spread_home: number | null;
+        total: number | null;
+      }
+    | undefined;
 
   if (!game) return null;
 
@@ -151,12 +178,16 @@ function getPublicGameInfo(nflTeam: string, week: number) {
 // Helper: generate stat line for public view
 function generatePublicStatLine(position: string, playerId: string, nflTeam: string, week: number): string {
   if (position === 'DEF') {
-    const defStats = db.prepare(`
+    const defStats = db
+      .prepare(
+        `
       SELECT * FROM team_defense_game_stats tdgs
       JOIN games g ON tdgs.game_id = g.id
       WHERE tdgs.defense_team_abbr = ? AND g.week = ?
-    `).get(nflTeam, week) as any;
-    
+    `
+      )
+      .get(nflTeam, week) as any;
+
     if (!defStats) return '';
     const parts: string[] = [];
     parts.push(`PA ${defStats.points_allowed || 0}`);
@@ -167,25 +198,29 @@ function generatePublicStatLine(position: string, playerId: string, nflTeam: str
     return parts.join(' • ');
   }
 
-  const stats = db.prepare(`
+  const stats = db
+    .prepare(
+      `
     SELECT * FROM player_game_stats pgs
     JOIN games g ON pgs.game_id = g.id
     WHERE pgs.player_id = ? AND g.week = ?
-  `).get(playerId, week) as any;
+  `
+    )
+    .get(playerId, week) as any;
 
   if (!stats) return '';
 
   if (position === 'QB') {
     const parts: string[] = [];
-    if (stats.pass_yards > 0 || stats.pass_tds > 0) {
-      let passLine = `${stats.pass_completions || 0}/${stats.pass_attempts || 0} ${stats.pass_yards}y`;
-      if (stats.pass_tds > 0) passLine += ` ${stats.pass_tds}TD`;
-      if (stats.pass_interceptions > 0) passLine += ` ${stats.pass_interceptions}INT`;
+    if (stats.pass_yards > 0 || stats.pass_tds > 0 || stats.pass_attempts > 0) {
+      let passLine = `${stats.pass_completions || 0}/${stats.pass_attempts || 0} ${stats.pass_yards || 0}y`;
+      if ((stats.pass_tds || 0) > 0) passLine += ` ${stats.pass_tds}TD`;
+      if ((stats.pass_interceptions || 0) > 0) passLine += ` ${stats.pass_interceptions}INT`;
       parts.push(passLine);
     }
-    if (stats.rush_yards > 0 || stats.rush_tds > 0) {
-      let rushLine = `Rush ${stats.rush_attempts || 0}-${stats.rush_yards}`;
-      if (stats.rush_tds > 0) rushLine += ` ${stats.rush_tds}TD`;
+    if ((stats.rush_attempts || 0) > 0 || (stats.rush_yards || 0) !== 0 || (stats.rush_tds || 0) > 0) {
+      let rushLine = `Rush ${stats.rush_attempts || 0}-${stats.rush_yards || 0}`;
+      if ((stats.rush_tds || 0) > 0) rushLine += ` ${stats.rush_tds}TD`;
       parts.push(rushLine);
     }
     return parts.join(' • ');
@@ -193,14 +228,14 @@ function generatePublicStatLine(position: string, playerId: string, nflTeam: str
 
   if (position === 'RB') {
     const parts: string[] = [];
-    if (stats.rush_yards > 0 || stats.rush_tds > 0) {
-      let rushLine = `${stats.rush_attempts || 0}-${stats.rush_yards}`;
-      if (stats.rush_tds > 0) rushLine += ` ${stats.rush_tds}TD`;
+    if ((stats.rush_attempts || 0) > 0 || (stats.rush_yards || 0) !== 0 || (stats.rush_tds || 0) > 0) {
+      let rushLine = `${stats.rush_attempts || 0}-${stats.rush_yards || 0}`;
+      if ((stats.rush_tds || 0) > 0) rushLine += ` ${stats.rush_tds}TD`;
       parts.push(rushLine);
     }
-    if (stats.receptions > 0 || stats.rec_yards > 0) {
-      let recLine = `Rec ${stats.receptions}-${stats.rec_yards}`;
-      if (stats.rec_tds > 0) recLine += ` ${stats.rec_tds}TD`;
+    if ((stats.receptions || 0) > 0 || (stats.rec_yards || 0) !== 0) {
+      let recLine = `Rec ${stats.receptions || 0}-${stats.rec_yards || 0}`;
+      if ((stats.rec_tds || 0) > 0) recLine += ` ${stats.rec_tds}TD`;
       parts.push(recLine);
     }
     return parts.join(' • ');
@@ -208,24 +243,28 @@ function generatePublicStatLine(position: string, playerId: string, nflTeam: str
 
   if (position === 'WR' || position === 'TE') {
     const parts: string[] = [];
-    if (stats.receptions > 0 || stats.rec_yards > 0) {
-      let recLine = `${stats.receptions}-${stats.rec_yards}`;
-      if (stats.rec_tds > 0) recLine += ` ${stats.rec_tds}TD`;
+    if ((stats.receptions || 0) > 0 || (stats.rec_yards || 0) !== 0) {
+      let recLine = `${stats.receptions || 0}-${stats.rec_yards || 0}`;
+      if ((stats.rec_tds || 0) > 0) recLine += ` ${stats.rec_tds}TD`;
       parts.push(recLine);
     }
-    if (stats.rush_yards > 0) {
-      parts.push(`Rush ${stats.rush_attempts || 0}-${stats.rush_yards}`);
+    if ((stats.rush_attempts || 0) > 0 || (stats.rush_yards || 0) !== 0) {
+      parts.push(`Rush ${stats.rush_attempts || 0}-${stats.rush_yards || 0}`);
     }
     return parts.join(' • ');
   }
 
   if (position === 'K') {
     const parts: string[] = [];
-    const fgMade = (stats.fg_made_0_39 || 0) + (stats.fg_made_40_49 || 0) + (stats.fg_made_50_54 || 0) + (stats.fg_made_55_plus || 0);
+    const fgMade =
+      (stats.fg_made_0_39 || 0) +
+      (stats.fg_made_40_49 || 0) +
+      (stats.fg_made_50_54 || 0) +
+      (stats.fg_made_55_plus || 0);
     const fgTotal = fgMade + (stats.fg_missed || 0);
     if (fgTotal > 0) {
       let fgLine = `FG ${fgMade}/${fgTotal}`;
-      if (stats.fg_long > 0) fgLine += ` (${stats.fg_long}L)`;
+      if ((stats.fg_long || 0) > 0) fgLine += ` (${stats.fg_long}L)`;
       parts.push(fgLine);
     }
     const xpTotal = (stats.xp_made || 0) + (stats.xp_missed || 0);
@@ -243,21 +282,25 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
   const { teamId } = req.params;
   const weekNum = parseInt(req.query.week as string) || 1;
 
-  // Get team info
-  const team = db.prepare(`
+  const team = db
+    .prepare(
+      `
     SELECT t.id, t.name, c.name as conference_name
     FROM teams t
     JOIN conferences c ON t.conference_id = c.id
     WHERE t.id = ?
-  `).get(teamId) as { id: string; name: string; conference_name: string } | undefined;
+  `
+    )
+    .get(teamId) as { id: string; name: string; conference_name: string } | undefined;
 
   if (!team) {
     res.status(404).json({ error: 'Team not found' });
     return;
   }
 
-  // Get roster with scores (starters only for public view)
-  const roster = db.prepare(`
+  const roster = db
+    .prepare(
+      `
     SELECT 
       rp.player_id,
       p.display_name,
@@ -276,7 +319,9 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
         WHEN 'FLEX1' THEN 4 WHEN 'FLEX2' THEN 5 WHEN 'FLEX3' THEN 6 
         WHEN 'K' THEN 7 WHEN 'DEF' THEN 8 
       END
-  `).all(weekNum, weekNum, teamId) as Array<{
+  `
+    )
+    .all(weekNum, weekNum, teamId) as Array<{
     player_id: string;
     display_name: string;
     position: string;
@@ -294,7 +339,7 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
       conferenceName: team.conference_name,
       totalPoints,
     },
-    starters: roster.map(p => ({
+    starters: roster.map((p) => ({
       displayName: p.display_name,
       position: p.position,
       nflTeam: p.nfl_team,
@@ -307,19 +352,24 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
   });
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/team', teamRoutes);
-app.use('/api/scores', scoresRoutes);
-
-// Serve built client in production
+/**
+ * Serve the built client in production
+ * This must be AFTER all /api routes and must NOT be blocked by a "/" health route.
+ */
 if (process.env.NODE_ENV === 'production') {
-  const clientDist = path.join(__dirname, '../../client/dist');
+  const clientDist = path.resolve(__dirname, '../../client/dist');
   console.log(`Production mode: serving static files from ${clientDist}`);
+
   app.use(express.static(clientDist));
-  app.get('/{*path}', (req: Request, res: Response) => {
+
+  // SPA fallback for React Router
+  app.get('*', (req: Request, res: Response) => {
     res.sendFile(path.join(clientDist, 'index.html'));
+  });
+} else {
+  // Dev-only health check
+  app.get('/', (req: Request, res: Response) => {
+    res.send('Wildcard Fantasy API running');
   });
 }
 
