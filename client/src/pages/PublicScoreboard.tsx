@@ -297,6 +297,10 @@ export default function PublicScoreboard() {
                   </button>
                 ))}
               </div>
+              
+              <p className="text-orange-400/80 text-sm font-medium">
+                ⏱ Scores update at halftime & end of games
+              </p>
             </div>
 
             {/* Conference Pools */}
