@@ -24,11 +24,15 @@ export function processManualIngest(data: IngestData): {
 
   // Process games
   const upsertGame = db.prepare(`
-    INSERT INTO games (id, week, home_team_abbr, away_team_abbr, kickoff_time, status, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO games (id, week, home_team_abbr, away_team_abbr, kickoff_time, status, home_score, away_score, spread_home, total, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT (id) DO UPDATE SET
       status = excluded.status,
       kickoff_time = excluded.kickoff_time,
+      home_score = excluded.home_score,
+      away_score = excluded.away_score,
+      spread_home = excluded.spread_home,
+      total = excluded.total,
       updated_at = excluded.updated_at
   `);
 
@@ -41,15 +45,23 @@ export function processManualIngest(data: IngestData): {
   for (const game of data.games || []) {
     const key = `${game.week}-${game.homeTeamAbbr}-${game.awayTeamAbbr}`;
     const existing = findGame.get(game.week, game.homeTeamAbbr, game.awayTeamAbbr) as { id: string } | undefined;
+    // Normalize status to lowercase
+    const status = (game.status || 'scheduled').toLowerCase();
     
     if (existing) {
       gameIdMap[key] = existing.id;
-      upsertGame.run(existing.id, game.week, game.homeTeamAbbr, game.awayTeamAbbr, game.kickoffTime, game.status, now);
+      upsertGame.run(
+        existing.id, game.week, game.homeTeamAbbr, game.awayTeamAbbr, game.kickoffTime, status,
+        game.homeScore ?? null, game.awayScore ?? null, game.spreadHome ?? null, game.total ?? null, now
+      );
       gamesUpdated++;
     } else {
       const gameId = uuidv4();
       gameIdMap[key] = gameId;
-      upsertGame.run(gameId, game.week, game.homeTeamAbbr, game.awayTeamAbbr, game.kickoffTime, game.status, now);
+      upsertGame.run(
+        gameId, game.week, game.homeTeamAbbr, game.awayTeamAbbr, game.kickoffTime, status,
+        game.homeScore ?? null, game.awayScore ?? null, game.spreadHome ?? null, game.total ?? null, now
+      );
       gamesCreated++;
     }
   }

@@ -8,7 +8,12 @@ export interface IngestGame {
   homeTeamAbbr: string;
   awayTeamAbbr: string;
   kickoffTime: string;
-  status: 'scheduled' | 'in_progress' | 'final';
+  status: 'scheduled' | 'in_progress' | 'final' | 'SCHEDULED' | 'IN_PROGRESS' | 'FINAL';
+  // Optional scores and lines
+  homeScore?: number | null;
+  awayScore?: number | null;
+  spreadHome?: number | null;
+  total?: number | null;
 }
 
 export interface IngestPlayerGameStats {
