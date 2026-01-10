@@ -298,7 +298,8 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
     return;
   }
 
-  const roster = db
+  // Get starters
+  const starters = db
     .prepare(
       `
     SELECT 
@@ -330,7 +331,33 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
     points: number;
   }>;
 
-  const totalPoints = Math.round(roster.reduce((sum, p) => sum + p.points, 0));
+  // Get bench players
+  const bench = db
+    .prepare(
+      `
+    SELECT 
+      rp.player_id,
+      p.display_name,
+      p.position,
+      p.nfl_team,
+      COALESCE(ps.points, 0) as points
+    FROM roster_players rp
+    JOIN players p ON rp.player_id = p.id
+    LEFT JOIN lineup_entries le ON rp.id = le.roster_player_id AND le.week = ?
+    LEFT JOIN player_scores ps ON rp.id = ps.roster_player_id AND ps.week = ?
+    WHERE rp.team_id = ? AND (le.slot IS NULL OR le.id IS NULL)
+    ORDER BY p.position, p.display_name
+  `
+    )
+    .all(weekNum, weekNum, teamId) as Array<{
+    player_id: string;
+    display_name: string;
+    position: string;
+    nfl_team: string;
+    points: number;
+  }>;
+
+  const totalPoints = Math.round(starters.reduce((sum, p) => sum + p.points, 0));
 
   res.json({
     team: {
@@ -339,11 +366,19 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
       conferenceName: team.conference_name,
       totalPoints,
     },
-    starters: roster.map((p) => ({
+    starters: starters.map((p) => ({
       displayName: p.display_name,
       position: p.position,
       nflTeam: p.nfl_team,
       slot: p.slot,
+      points: Math.round(p.points),
+      statLine: generatePublicStatLine(p.position, p.player_id, p.nfl_team, weekNum),
+      game: getPublicGameInfo(p.nfl_team, weekNum),
+    })),
+    bench: bench.map((p) => ({
+      displayName: p.display_name,
+      position: p.position,
+      nflTeam: p.nfl_team,
       points: Math.round(p.points),
       statLine: generatePublicStatLine(p.position, p.player_id, p.nfl_team, weekNum),
       game: getPublicGameInfo(p.nfl_team, weekNum),

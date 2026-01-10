@@ -61,12 +61,21 @@ interface Starter {
   game?: GameInfo | null;
 }
 
+interface BenchPlayer {
+  displayName: string;
+  position: string;
+  nflTeam: string;
+  points: number;
+  statLine?: string;
+  game?: GameInfo | null;
+}
+
 export default function PublicScoreboard() {
   const navigate = useNavigate();
   const { teamId } = useParams<{ teamId?: string }>();
   const [week, setWeek] = useState(1);
   const [conferences, setConferences] = useState<Conference[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState<{ team: TeamDetail; starters: Starter[] } | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<{ team: TeamDetail; starters: Starter[]; bench?: BenchPlayer[] } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -213,6 +222,47 @@ export default function PublicScoreboard() {
                 )}
               </div>
             </div>
+
+            {/* Bench Section */}
+            {selectedTeam.bench && selectedTeam.bench.length > 0 && (
+              <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
+                <div className="px-6 py-4 border-b border-slate-700/50 bg-slate-800/30">
+                  <h3 className="text-lg font-semibold text-white">Bench</h3>
+                  <p className="text-slate-500 text-sm">{selectedTeam.bench.length} players</p>
+                </div>
+                <div className="divide-y divide-slate-800/50">
+                  {selectedTeam.bench.map((player, index) => (
+                    <div key={index} className="px-6 py-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <span className="w-14 text-center flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700/50 text-slate-400">
+                            {player.position}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-slate-300 font-medium">{player.displayName}</div>
+                            {/* Stat line */}
+                            {player.statLine ? (
+                              <div className="text-emerald-400 text-sm">{player.statLine}</div>
+                            ) : null}
+                            {/* Game info strip */}
+                            {player.game ? (
+                              <GameStrip game={player.game} />
+                            ) : (
+                              <div className="text-slate-600 text-sm">{player.nflTeam}</div>
+                            )}
+                          </div>
+                        </div>
+                        <div className={`text-xl font-bold min-w-[3rem] text-right flex-shrink-0 ${
+                          player.statLine ? 'text-slate-400' : player.points > 0 ? 'text-slate-400' : 'text-slate-600'
+                        }`}>
+                          {player.points}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           /* Scoreboard View */
