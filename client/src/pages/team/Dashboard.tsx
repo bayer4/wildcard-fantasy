@@ -60,10 +60,12 @@ function GameStrip({ game, nflTeam }: { game?: GameInfo | null; nflTeam: string 
   }
 
   const kickoff = new Date(game.kickoffUtc);
+  const isLive = game.gameStatus === 'in_progress' || game.gameStatus === 'IN_PROGRESS';
+  const isFinal = game.gameStatus === 'final' || game.gameStatus === 'FINAL';
   
   const formatKickoff = () => {
-    if (game.gameStatus === 'final') return 'Final';
-    if (game.gameStatus === 'in_progress') return 'Live';
+    if (isFinal) return 'Final';
+    if (isLive) return 'Live';
     return kickoff.toLocaleString('en-US', {
       weekday: 'short',
       hour: 'numeric',
@@ -80,8 +82,6 @@ function GameStrip({ game, nflTeam }: { game?: GameInfo | null; nflTeam: string 
   };
 
   const spread = formatSpread();
-
-  const isLive = game.gameStatus === 'in_progress';
 
   return (
     <div className="text-xs text-slate-500 flex items-center gap-1.5 flex-wrap">
