@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcryptjs';
 import db from '../db';
 import { seedData, scoringRules } from './bcflWildcardSeed';
 
@@ -157,6 +158,18 @@ export function runBcflSeed(force: boolean = false): {
 
     // Set as active in league settings
     db.prepare('UPDATE league_settings SET active_scoring_rule_set_id = ? WHERE id = ?').run(ruleSetId, 'default');
+
+    // Create default admin user if no users exist
+    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
+    if (userCount.count === 0) {
+      const adminId = uuidv4();
+      const passwordHash = bcrypt.hashSync('admin', 10);
+      db.prepare(`
+        INSERT INTO users (id, email, password_hash, role)
+        VALUES (?, ?, ?, ?)
+      `).run(adminId, 'admin@bcfl.com', passwordHash, 'admin');
+      console.log('Created default admin user: admin@bcfl.com / admin');
+    }
   });
 
   transaction();
