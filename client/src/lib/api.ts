@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Use Vite env variable or default to localhost
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// In production (same origin), use relative URL. In dev, default to localhost:3001
+const isProduction = import.meta.env.PROD;
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (isProduction ? '' : 'http://localhost:3001');
 const API_BASE = API_BASE_URL + '/api';
 
 /**
