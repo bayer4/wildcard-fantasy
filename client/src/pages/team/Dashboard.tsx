@@ -60,8 +60,6 @@ function GameStrip({ game, nflTeam }: { game?: GameInfo | null; nflTeam: string 
   }
 
   const kickoff = new Date(game.kickoffUtc);
-  const now = new Date();
-  const isUpcoming = kickoff > now && game.gameStatus === 'scheduled';
   
   const formatKickoff = () => {
     if (game.gameStatus === 'final') return 'Final';
@@ -92,13 +90,13 @@ function GameStrip({ game, nflTeam }: { game?: GameInfo | null; nflTeam: string 
       <span className={game.gameStatus === 'in_progress' ? 'text-green-400 font-medium' : ''}>
         {formatKickoff()}
       </span>
-      {isUpcoming && game.total !== null && (
+      {game.total !== null && (
         <>
           <span className="text-slate-600">•</span>
           <span>O/U {game.total}</span>
         </>
       )}
-      {isUpcoming && spread && (
+      {spread && (
         <>
           <span className="text-slate-600">•</span>
           <span>{spread}</span>
