@@ -975,6 +975,29 @@ interface GameUpload {
   total?: number | null;
 }
 
+// Clear all games for a week
+router.delete('/games/:week', (req: AuthRequest, res: Response) => {
+  const { week } = req.params;
+  const weekNum = parseInt(week);
+
+  if (!weekNum || weekNum < 1 || weekNum > 4) {
+    res.status(400).json({ error: 'Invalid week number' });
+    return;
+  }
+
+  try {
+    const result = db.prepare('DELETE FROM games WHERE week = ?').run(weekNum);
+    res.json({ 
+      success: true, 
+      week: weekNum, 
+      deleted: result.changes 
+    });
+  } catch (error: any) {
+    console.error('Clear games error:', error);
+    res.status(500).json({ error: 'Failed to clear games', details: error.message });
+  }
+});
+
 // Upload/upsert games for a week
 router.post('/games/upload', (req: AuthRequest, res: Response) => {
   try {

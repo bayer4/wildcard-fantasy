@@ -45,6 +45,7 @@ export default function AdminGames() {
   const [jsonInput, setJsonInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -91,6 +92,28 @@ export default function AdminGames() {
       }
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleClearGames = async () => {
+    if (!confirm(`Are you sure you want to delete ALL ${ROUND_NAMES[selectedWeek]} games? This cannot be undone.`)) {
+      return;
+    }
+
+    setClearing(true);
+    setMessage(null);
+
+    try {
+      const res = await adminApi.clearGames(selectedWeek);
+      setMessage({ 
+        type: 'success', 
+        text: `Cleared ${res.data.deleted} games from ${ROUND_NAMES[selectedWeek]}` 
+      });
+      loadGames();
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.response?.data?.error || 'Failed to clear games' });
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -186,8 +209,21 @@ export default function AdminGames() {
         {/* Current Games */}
         <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-800">
-            <h2 className="text-xl font-semibold text-white">{ROUND_NAMES[selectedWeek]} Games</h2>
-            <p className="text-slate-500 text-sm mt-1">{games.length} games loaded</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-white">{ROUND_NAMES[selectedWeek]} Games</h2>
+                <p className="text-slate-500 text-sm mt-1">{games.length} games loaded</p>
+              </div>
+              {games.length > 0 && (
+                <button
+                  onClick={handleClearGames}
+                  disabled={clearing}
+                  className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 disabled:bg-slate-700 border border-red-500/30 text-red-400 text-sm font-medium rounded-lg transition-colors"
+                >
+                  {clearing ? 'Clearing...' : 'Clear All'}
+                </button>
+              )}
+            </div>
           </div>
           <div className="divide-y divide-slate-800 max-h-[500px] overflow-y-auto">
             {loading ? (

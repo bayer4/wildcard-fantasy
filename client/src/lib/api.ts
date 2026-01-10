@@ -169,6 +169,7 @@ export const adminApi = {
   // Games
   getGames: (week: number) => api.get('/admin/games', { params: { week } }),
   uploadGames: (week: number, games: any[]) => api.post('/admin/games/upload', { week, games }),
+  clearGames: (week: number) => api.delete(`/admin/games/${week}`),
 
   // Settings
   getSettings: () => api.get('/admin/settings'),
