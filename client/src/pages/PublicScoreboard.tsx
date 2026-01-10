@@ -582,11 +582,14 @@ function GameStrip({ game }: { game: GameInfo }) {
     return spread > 0 ? `+${spread}` : `${spread}`;
   };
 
+  const isLive = game.gameStatus === 'IN_PROGRESS' || game.gameStatus === 'in_progress';
+  const isFinal = game.gameStatus === 'FINAL' || game.gameStatus === 'final';
+
   const parts: string[] = [game.opponent];
   
-  if (game.gameStatus === 'FINAL') {
+  if (isFinal) {
     parts.push('Final');
-  } else if (game.gameStatus === 'IN_PROGRESS') {
+  } else if (isLive) {
     parts.push('Live');
   } else {
     parts.push(formatKickoff(game.kickoffUtc));
@@ -602,8 +605,16 @@ function GameStrip({ game }: { game: GameInfo }) {
   }
 
   return (
-    <div className="text-slate-500 text-sm">
-      {parts.join(' • ')}
+    <div className="text-slate-500 text-sm flex items-center gap-1.5">
+      {isLive && (
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+        </span>
+      )}
+      <span className={isLive ? 'text-green-400' : ''}>
+        {parts.join(' • ')}
+      </span>
     </div>
   );
 }
