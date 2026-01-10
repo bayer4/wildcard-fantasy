@@ -99,7 +99,7 @@ app.get('/api/public/scoreboard/:week', (req: Request, res: Response) => {
     FROM teams t
     JOIN conferences c ON t.conference_id = c.id
     LEFT JOIN team_scores ts ON t.id = ts.team_id AND ts.week = ?
-    ORDER BY c.name, COALESCE(ts.starter_points, 0) DESC
+    ORDER BY c.name, COALESCE(ts.starter_points, 0) DESC, COALESCE(ts.bench_points, 0) DESC
   `
     )
     .all(weekNum, weekNum) as Array<{

@@ -956,7 +956,7 @@ router.get('/scores/:week', (req: AuthRequest, res: Response) => {
     JOIN teams t ON ts.team_id = t.id
     JOIN conferences c ON t.conference_id = c.id
     WHERE ts.week = ?
-    ORDER BY ts.starter_points DESC
+    ORDER BY ts.starter_points DESC, ts.bench_points DESC
   `).all(parseInt(week));
   res.json(scores);
 });

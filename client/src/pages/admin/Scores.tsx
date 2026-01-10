@@ -91,7 +91,7 @@ export default function AdminScores() {
                   ) : (
                     <div className="space-y-2">
                       {confTeams
-                        .sort((a, b) => b.starter_points - a.starter_points)
+                        .sort((a, b) => b.starter_points - a.starter_points || b.bench_points - a.bench_points)
                         .map((team, idx) => (
                           <div
                             key={team.team_id}

@@ -502,7 +502,7 @@ router.get('/standings/:week', (req: AuthRequest, res: Response) => {
     JOIN teams t ON ts.team_id = t.id
     JOIN conferences c ON t.conference_id = c.id
     WHERE ts.week = ?
-    ORDER BY ts.starter_points DESC
+    ORDER BY ts.starter_points DESC, ts.bench_points DESC
   `).all(weekNum);
 
   res.json(standings);
@@ -557,7 +557,7 @@ router.get('/scoreboard/:week', (req: AuthRequest, res: Response) => {
     FROM teams t
     JOIN conferences c ON t.conference_id = c.id
     LEFT JOIN team_scores ts ON t.id = ts.team_id AND ts.week = ?
-    ORDER BY c.name, COALESCE(ts.starter_points, 0) DESC
+    ORDER BY c.name, COALESCE(ts.starter_points, 0) DESC, COALESCE(ts.bench_points, 0) DESC
   `).all(weekNum, weekNum) as Array<{
     id: string;
     name: string;
@@ -869,7 +869,7 @@ router.get('/matchup/:week/:teamId', (req: AuthRequest, res: Response) => {
     FROM teams t
     LEFT JOIN team_scores ts ON t.id = ts.team_id AND ts.week = ?
     WHERE t.conference_id = ?
-    ORDER BY COALESCE(ts.starter_points, 0) DESC
+    ORDER BY COALESCE(ts.starter_points, 0) DESC, COALESCE(ts.bench_points, 0) DESC
   `).all(weekNum, weekNum, team.conference_id) as Array<{
     id: string;
     name: string;

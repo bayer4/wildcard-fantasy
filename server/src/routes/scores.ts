@@ -13,13 +13,13 @@ router.get('/:week', (req: AuthRequest, res: Response) => {
   const { week } = req.params;
   const weekNum = parseInt(week);
 
-  // Get persisted scores
+  // Get persisted scores (bench_points is tiebreaker)
   const scores = db.prepare(`
     SELECT ts.*, t.name as team_name, t.conference
     FROM team_scores ts
     JOIN teams t ON ts.team_id = t.id
     WHERE ts.week = ?
-    ORDER BY ts.starter_points DESC
+    ORDER BY ts.starter_points DESC, ts.bench_points DESC
   `).all(weekNum);
 
   res.json(scores);
@@ -88,7 +88,7 @@ router.get('/:week/standings/:conference', (req: AuthRequest, res: Response) => 
     FROM team_scores ts
     JOIN teams t ON ts.team_id = t.id
     WHERE ts.week = ? AND t.conference = ?
-    ORDER BY ts.starter_points DESC
+    ORDER BY ts.starter_points DESC, ts.bench_points DESC
   `).all(weekNum, conference);
 
   res.json(standings);

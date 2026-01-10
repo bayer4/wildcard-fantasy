@@ -47,8 +47,13 @@ export default function Standings() {
     }
   };
 
-  const afcTeams = standings.filter((s) => s.conference === 'AFC').sort((a, b) => b.starter_points - a.starter_points);
-  const nfcTeams = standings.filter((s) => s.conference === 'NFC').sort((a, b) => b.starter_points - a.starter_points);
+  // Sort by starter points, then bench points as tiebreaker
+  const afcTeams = standings.filter((s) => s.conference === 'AFC').sort((a, b) => 
+    b.starter_points - a.starter_points || b.bench_points - a.bench_points
+  );
+  const nfcTeams = standings.filter((s) => s.conference === 'NFC').sort((a, b) => 
+    b.starter_points - a.starter_points || b.bench_points - a.bench_points
+  );
 
   return (
     <div className="space-y-8">
@@ -125,7 +130,7 @@ export default function Standings() {
             <h2 className="text-2xl font-bold text-white mb-6">Overall Leaderboard</h2>
             <div className="space-y-2">
               {standings
-                .sort((a, b) => b.starter_points - a.starter_points)
+                .sort((a, b) => b.starter_points - a.starter_points || b.bench_points - a.bench_points)
                 .map((team, idx) => (
                   <div
                     key={team.team_id}
