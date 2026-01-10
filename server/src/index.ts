@@ -363,9 +363,10 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(clientDist));
 
   // SPA fallback for React Router
-  app.get('*', (req: Request, res: Response) => {
+  app.get('/*', (req: Request, res: Response) => { 
     res.sendFile(path.join(clientDist, 'index.html'));
-  });
+});
+
 } else {
   // Dev-only health check
   app.get('/', (req: Request, res: Response) => {
