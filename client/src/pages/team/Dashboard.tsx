@@ -119,6 +119,7 @@ interface LineupData {
     id: string;
     name: string;
     conferenceName: string;
+    minutesLeft?: number;
   };
   week: number;
   lineup: Record<SlotType, Player | null>;
@@ -321,7 +322,17 @@ export default function TeamDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">{lineupData.team.name}</h1>
-          <p className="text-slate-400">{lineupData.team.conferenceName} Conference</p>
+          <div className="flex items-center gap-3">
+            <p className="text-slate-400">{lineupData.team.conferenceName} Conference</p>
+            {lineupData.team.minutesLeft !== undefined && lineupData.team.minutesLeft > 0 && (
+              <span className="text-slate-500 text-sm flex items-center gap-1">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {lineupData.team.minutesLeft}m left
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <label className="text-slate-400 text-sm">Round:</label>

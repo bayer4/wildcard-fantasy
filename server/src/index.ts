@@ -125,6 +125,7 @@ app.get('/api/public/scoreboard/:week', (req: Request, res: Response) => {
       id: team.id,
       name: team.name,
       score: Math.round(team.score),
+      minutesLeft: getMinutesLeft(team.id, weekNum),
     });
   }
 
@@ -133,6 +134,39 @@ app.get('/api/public/scoreboard/:week', (req: Request, res: Response) => {
     conferences: Object.values(conferences),
   });
 });
+
+// Helper: calculate minutes left for a team based on starters' game statuses
+function getMinutesLeft(teamId: string, week: number): number {
+  // Get all starters for this team and their NFL teams
+  const starters = db.prepare(`
+    SELECT p.nfl_team
+    FROM lineup_entries le
+    JOIN roster_players rp ON le.roster_player_id = rp.id
+    JOIN players p ON rp.player_id = p.id
+    WHERE rp.team_id = ? AND le.week = ? AND le.slot IS NOT NULL
+  `).all(teamId, week) as Array<{ nfl_team: string }>;
+
+  let minutesLeft = 0;
+  
+  for (const starter of starters) {
+    const game = db.prepare(`
+      SELECT status FROM games 
+      WHERE week = ? AND (home_team_abbr = ? OR away_team_abbr = ?)
+    `).get(week, starter.nfl_team, starter.nfl_team) as { status: string } | undefined;
+    
+    if (!game) {
+      // No game found, assume full 60 minutes
+      minutesLeft += 60;
+    } else if (game.status === 'scheduled') {
+      minutesLeft += 60;
+    } else if (game.status === 'in_progress') {
+      minutesLeft += 30; // Estimate mid-game
+    }
+    // 'final' adds 0 minutes
+  }
+  
+  return minutesLeft;
+}
 
 // Helper: get game info for a player's NFL team
 function getPublicGameInfo(nflTeam: string, week: number) {
@@ -365,6 +399,7 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
       name: team.name,
       conferenceName: team.conference_name,
       totalPoints,
+      minutesLeft: getMinutesLeft(teamId, weekNum),
     },
     starters: starters.map((p) => ({
       displayName: p.display_name,

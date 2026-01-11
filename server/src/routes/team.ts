@@ -134,6 +134,37 @@ function getGameInfoForPlayer(nflTeam: string, week: number): GameInfo | null {
   };
 }
 
+// Helper: calculate minutes left for a team based on starters' game statuses
+function getMinutesLeft(teamId: string, week: number): number {
+  const starters = db.prepare(`
+    SELECT p.nfl_team
+    FROM lineup_entries le
+    JOIN roster_players rp ON le.roster_player_id = rp.id
+    JOIN players p ON rp.player_id = p.id
+    WHERE rp.team_id = ? AND le.week = ? AND le.slot IS NOT NULL
+  `).all(teamId, week) as Array<{ nfl_team: string }>;
+
+  let minutesLeft = 0;
+  
+  for (const starter of starters) {
+    const game = db.prepare(`
+      SELECT status FROM games 
+      WHERE week = ? AND (home_team_abbr = ? OR away_team_abbr = ?)
+    `).get(week, starter.nfl_team, starter.nfl_team) as { status: string } | undefined;
+    
+    if (!game) {
+      minutesLeft += 60;
+    } else if (game.status === 'scheduled') {
+      minutesLeft += 60;
+    } else if (game.status === 'in_progress') {
+      minutesLeft += 30;
+    }
+    // 'final' adds 0 minutes
+  }
+  
+  return minutesLeft;
+}
+
 // ========== TEAM INFO ==========
 
 router.get('/my-team', (req: AuthRequest, res: Response) => {
@@ -256,6 +287,7 @@ router.get('/lineup/:week', (req: AuthRequest, res: Response) => {
       id: team.id,
       name: team.name,
       conferenceName: team.conference_name,
+      minutesLeft: getMinutesLeft(targetTeamId, weekNum),
     },
     week: weekNum,
     lineup,

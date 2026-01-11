@@ -27,6 +27,7 @@ interface Team {
   id: string;
   name: string;
   score: number;
+  minutesLeft?: number;
 }
 
 interface GameInfo {
@@ -49,6 +50,7 @@ interface TeamDetail {
   name: string;
   conferenceName: string;
   totalPoints: number;
+  minutesLeft?: number;
 }
 
 interface Starter {
@@ -180,6 +182,14 @@ export default function PublicScoreboard() {
                       {selectedTeam.team.totalPoints}
                     </div>
                     <div className="text-slate-500 text-sm uppercase tracking-wide">Points</div>
+                    {selectedTeam.team.minutesLeft !== undefined && selectedTeam.team.minutesLeft > 0 && (
+                      <div className="text-slate-400 text-sm mt-1 flex items-center justify-end gap-1">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {selectedTeam.team.minutesLeft}m left
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -532,8 +542,17 @@ function ConferenceCard({ conference, isPoolRound, onTeamClick }: ConferenceCard
                 <span className="font-semibold text-white">{team.name}</span>
               </div>
 
-              {/* Score */}
-              <div className="flex items-center gap-3">
+              {/* Score & Minutes */}
+              <div className="flex items-center gap-4">
+                {/* Minutes Left */}
+                {team.minutesLeft !== undefined && team.minutesLeft > 0 && (
+                  <div className="text-xs text-slate-500 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {team.minutesLeft}m
+                  </div>
+                )}
                 <div className={`text-2xl font-black ${
                   team.score > 0 ? 'text-white' : 'text-slate-600'
                 }`}>
