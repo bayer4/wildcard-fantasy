@@ -986,7 +986,26 @@ router.delete('/games/:week', (req: AuthRequest, res: Response) => {
   }
 
   try {
+    // Get game IDs for this week
+    const gameIds = db.prepare('SELECT id FROM games WHERE week = ?')
+      .all(weekNum) as Array<{ id: string }>;
+    
+    if (gameIds.length === 0) {
+      res.json({ success: true, week: weekNum, deleted: 0 });
+      return;
+    }
+
+    const ids = gameIds.map(g => g.id);
+    const placeholders = ids.map(() => '?').join(',');
+
+    // Delete related records first (foreign key constraints)
+    db.prepare(`DELETE FROM player_game_stats WHERE game_id IN (${placeholders})`).run(...ids);
+    db.prepare(`DELETE FROM team_defense_game_stats WHERE game_id IN (${placeholders})`).run(...ids);
+    db.prepare(`DELETE FROM game_events WHERE game_id IN (${placeholders})`).run(...ids);
+
+    // Now delete the games
     const result = db.prepare('DELETE FROM games WHERE week = ?').run(weekNum);
+    
     res.json({ 
       success: true, 
       week: weekNum, 
