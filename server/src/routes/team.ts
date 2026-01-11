@@ -154,12 +154,15 @@ function getMinutesLeft(teamId: string, week: number): number {
     
     if (!game) {
       minutesLeft += 60;
-    } else if (game.status === 'scheduled') {
-      minutesLeft += 60;
-    } else if (game.status === 'in_progress') {
-      minutesLeft += 30;
+    } else {
+      const status = game.status.toLowerCase();
+      if (status === 'scheduled') {
+        minutesLeft += 60;
+      } else if (status === 'in_progress') {
+        minutesLeft += 30;
+      }
+      // 'final' adds 0 minutes
     }
-    // 'final' adds 0 minutes
   }
   
   return minutesLeft;
