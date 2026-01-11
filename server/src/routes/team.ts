@@ -569,6 +569,7 @@ interface ScoreboardTeam {
   conferenceId: string;
   conferenceName: string;
   lineupSet: boolean;
+  minutesLeft: number;
 }
 
 /**
@@ -620,6 +621,7 @@ router.get('/scoreboard/:week', (req: AuthRequest, res: Response) => {
       conferenceId: team.conference_id,
       conferenceName: team.conference_name,
       lineupSet: team.starters_count >= 8, // All 8 slots filled
+      minutesLeft: getMinutesLeft(team.id, weekNum),
     });
   }
 

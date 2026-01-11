@@ -20,6 +20,7 @@ interface Team {
   conferenceId: string;
   conferenceName: string;
   lineupSet: boolean;
+  minutesLeft?: number;
 }
 
 interface Conference {
@@ -391,8 +392,17 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, onTeamClick }: Co
                 </div>
               </div>
 
-              {/* Score */}
-              <div className="flex items-center gap-3">
+              {/* Score & Minutes */}
+              <div className="flex items-center gap-4">
+                {/* Minutes Left */}
+                {team.minutesLeft !== undefined && team.minutesLeft > 0 && (
+                  <div className="text-xs text-slate-500 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {team.minutesLeft}m
+                  </div>
+                )}
                 <div className="text-right">
                   <div className={`text-2xl font-black ${
                     team.score > 0 ? 'text-white' : 'text-slate-600'
