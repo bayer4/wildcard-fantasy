@@ -405,12 +405,12 @@ export function calculatePlayerScore(
       breakdown.push({ category: 'Kicking', stat: 'XP Missed', value: stats.xp_missed, points: pts });
     }
 
-    // Missed FG (simplified - use missedFG30to39 as default penalty)
-    if (stats.fg_missed > 0 && kicking.missedFG30to39) {
-      const pts = stats.fg_missed * kicking.missedFG30to39;
-      points += pts;
-      breakdown.push({ category: 'Kicking', stat: 'FG Missed', value: stats.fg_missed, points: pts });
-    }
+    // Missed FG penalties only apply to short misses (under 40 yards)
+    // Since we don't track miss distance, no automatic penalty is applied
+    // Use manual bonuses via Admin -> Ingest for short miss penalties:
+    //   - missedFG30to39: -1
+    //   - missedFG29orLess: -2
+    // Misses 40+ yards have no penalty
   }
 
   // ===== EVENT-BASED BONUSES (50+ yard TDs, etc.) =====
