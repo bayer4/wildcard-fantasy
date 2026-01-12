@@ -242,12 +242,20 @@ export function calculatePlayerScore(
   // ===== PASSING =====
   const passing = bonuses.passing || {};
   
-  // Passing TDs (base NFL points typically 4)
+  // Passing TDs - Non-QBs get nonQbPassTdPoints (7), QBs get tdPoints (4)
   if (stats.pass_tds > 0) {
-    const tdPts = passing.tdPoints ?? 4;
+    const isNonQb = position !== 'QB';
+    const tdPts = isNonQb && passing.nonQbPassTdPoints 
+      ? passing.nonQbPassTdPoints 
+      : (passing.tdPoints ?? 4);
     const passTdPoints = stats.pass_tds * tdPts;
     points += passTdPoints;
-    breakdown.push({ category: 'Passing', stat: 'TDs', value: stats.pass_tds, points: passTdPoints });
+    breakdown.push({ 
+      category: 'Passing', 
+      stat: isNonQb ? 'Non-QB Pass TD' : 'TDs', 
+      value: stats.pass_tds, 
+      points: passTdPoints 
+    });
   }
 
   // Passing yardage milestone bonus
