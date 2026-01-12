@@ -98,13 +98,13 @@ function GameStrip({ game, nflTeam }: { game?: GameInfo | null; nflTeam: string 
       <span className={isLive ? 'text-green-400 font-medium' : ''}>
         {formatKickoff()}
       </span>
-      {game.total !== null && (
+      {!isFinal && game.total !== null && (
         <>
           <span className="text-slate-600">•</span>
           <span>O/U {game.total}</span>
         </>
       )}
-      {spread && (
+      {!isFinal && spread && (
         <>
           <span className="text-slate-600">•</span>
           <span>{spread}</span>

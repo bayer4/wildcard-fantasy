@@ -614,13 +614,16 @@ function GameStrip({ game }: { game: GameInfo }) {
     parts.push(formatKickoff(game.kickoffUtc));
   }
 
-  if (game.total !== null) {
-    parts.push(`O/U ${game.total}`);
-  }
+  // Only show O/U and spread for upcoming/live games, not final
+  if (!isFinal) {
+    if (game.total !== null) {
+      parts.push(`O/U ${game.total}`);
+    }
 
-  const spread = formatSpread(game.spreadHome, game.isHome);
-  if (spread) {
-    parts.push(spread);
+    const spread = formatSpread(game.spreadHome, game.isHome);
+    if (spread) {
+      parts.push(spread);
+    }
   }
 
   return (
