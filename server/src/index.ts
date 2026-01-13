@@ -260,6 +260,9 @@ function generatePublicStatLine(position: string, playerId: string, nflTeam: str
     if (defStats.sacks > 0) parts.push(`Sack ${defStats.sacks}`);
     if (defStats.interceptions > 0) parts.push(`INT ${defStats.interceptions}`);
     if (defStats.fumble_recoveries > 0) parts.push(`FR ${defStats.fumble_recoveries}`);
+    if (defStats.defense_tds > 0) parts.push(`TD ${defStats.defense_tds}`);
+    if (defStats.return_tds > 0) parts.push(`Ret TD ${defStats.return_tds}`);
+    if (defStats.safeties > 0) parts.push(`Safety ${defStats.safeties}`);
     return parts.join(' • ');
   }
 
