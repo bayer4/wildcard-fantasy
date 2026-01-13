@@ -18,6 +18,7 @@ import AdminIngest from './pages/admin/Ingest';
 import AdminScores from './pages/admin/Scores';
 import AdminRules from './pages/admin/Rules';
 import AdminGames from './pages/admin/Games';
+import AdminWriteups from './pages/admin/Writeups';
 
 // Team pages
 import TeamDashboard from './pages/team/Dashboard';
@@ -177,6 +178,14 @@ export default function App() {
             element={
               <AdminRoute>
                 <AdminGames />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/writeups"
+            element={
+              <AdminRoute>
+                <AdminWriteups />
               </AdminRoute>
             }
           />

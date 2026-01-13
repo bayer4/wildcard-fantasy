@@ -1212,4 +1212,80 @@ router.delete('/cleanup/week/:week', (req: AuthRequest, res: Response) => {
   }
 });
 
+// ========== WEEKLY WRITEUPS ==========
+
+// Get all writeups
+router.get('/writeups', (_req: AuthRequest, res: Response) => {
+  try {
+    const writeups = db.prepare(`
+      SELECT id, week, title, content, publish_at, created_at
+      FROM weekly_writeups
+      ORDER BY week DESC
+    `).all();
+    res.json(writeups);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to fetch writeups', details: error.message });
+  }
+});
+
+// Get writeup by week
+router.get('/writeups/:week', (req: AuthRequest, res: Response) => {
+  try {
+    const week = parseInt(req.params.week);
+    const writeup = db.prepare(`
+      SELECT id, week, title, content, publish_at, created_at
+      FROM weekly_writeups
+      WHERE week = ?
+    `).get(week);
+    
+    if (!writeup) {
+      return res.status(404).json({ error: 'Writeup not found' });
+    }
+    res.json(writeup);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to fetch writeup', details: error.message });
+  }
+});
+
+// Create or update writeup
+router.post('/writeups', (req: AuthRequest, res: Response) => {
+  try {
+    const { week, title, content, publishAt } = req.body;
+    
+    if (!week || !title || !content || !publishAt) {
+      return res.status(400).json({ error: 'Missing required fields: week, title, content, publishAt' });
+    }
+    
+    const id = `writeup-${week}`;
+    
+    db.prepare(`
+      INSERT INTO weekly_writeups (id, week, title, content, publish_at)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT (week) DO UPDATE SET
+        title = excluded.title,
+        content = excluded.content,
+        publish_at = excluded.publish_at
+    `).run(id, week, title, content, publishAt);
+    
+    res.json({ success: true, id, week, title, publishAt });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to save writeup', details: error.message });
+  }
+});
+
+// Delete writeup
+router.delete('/writeups/:week', (req: AuthRequest, res: Response) => {
+  try {
+    const week = parseInt(req.params.week);
+    const result = db.prepare('DELETE FROM weekly_writeups WHERE week = ?').run(week);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Writeup not found' });
+    }
+    res.json({ success: true, message: `Deleted writeup for week ${week}` });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to delete writeup', details: error.message });
+  }
+});
+
 export default router;

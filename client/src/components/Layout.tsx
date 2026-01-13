@@ -74,6 +74,12 @@ export default function Layout() {
                     >
                       Games
                     </Link>
+                    <Link
+                      to="/admin/writeups"
+                      className="text-slate-300 hover:text-amber-400 transition-colors font-medium"
+                    >
+                      Writeups
+                    </Link>
                   </>
                 ) : (
                   <>

@@ -80,6 +80,24 @@ app.get('/api/games', (req: Request, res: Response) => {
   res.json({ week, games });
 });
 
+// Public writeup endpoint - returns the active writeup for a week if publish time has passed
+app.get('/api/public/writeup/:week', (req: Request, res: Response) => {
+  const week = parseInt(req.params.week) || 1;
+  const now = new Date().toISOString();
+  
+  const writeup = db.prepare(`
+    SELECT id, week, title, content, publish_at
+    FROM weekly_writeups
+    WHERE week = ? AND publish_at <= ?
+  `).get(week, now) as { id: string; week: number; title: string; content: string; publish_at: string } | undefined;
+  
+  if (!writeup) {
+    return res.json({ writeup: null });
+  }
+  
+  res.json({ writeup });
+});
+
 // Public scoreboard endpoint (no auth required)
 app.get('/api/public/scoreboard/:week', (req: Request, res: Response) => {
   const weekNum = parseInt(req.params.week) || 1;

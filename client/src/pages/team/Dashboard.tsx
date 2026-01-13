@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { teamApi } from '../../lib/api';
 import { useAuthStore } from '../../lib/store';
+import WriteupPopup from '../../components/WriteupPopup';
 
 // Slot configuration
 const STARTER_SLOTS = ['QB', 'RB', 'WRTE', 'FLEX1', 'FLEX2', 'FLEX3', 'K', 'DEF'] as const;
@@ -571,6 +572,9 @@ export default function TeamDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Weekly Writeup Popup */}
+      {league && <WriteupPopup week={league.current_week} />}
     </div>
   );
 }

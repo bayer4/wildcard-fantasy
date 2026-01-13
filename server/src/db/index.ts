@@ -312,4 +312,22 @@ function runMigrations(): void {
       console.log(`Migration: ${col.name} added successfully`);
     }
   }
+
+  // Migration 4: Add weekly_writeups table
+  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='weekly_writeups'").get();
+  if (!tables) {
+    console.log('Migration: Creating weekly_writeups table...');
+    db.exec(`
+      CREATE TABLE weekly_writeups (
+        id TEXT PRIMARY KEY,
+        week INTEGER NOT NULL UNIQUE,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        publish_at TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
+      CREATE INDEX idx_writeups_week ON weekly_writeups(week);
+    `);
+    console.log('Migration: weekly_writeups table created successfully');
+  }
 }

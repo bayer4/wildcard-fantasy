@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { publicApi } from '../lib/api';
+import WriteupPopup from '../components/WriteupPopup';
 
 const ROUND_NAMES: Record<number, string> = {
   1: 'Wildcard',
@@ -338,6 +339,9 @@ export default function PublicScoreboard() {
           <p>BCFL Wildcard Playoffs 2025</p>
         </div>
       </main>
+
+      {/* Weekly Writeup Popup */}
+      <WriteupPopup week={week} />
     </div>
   );
 }
