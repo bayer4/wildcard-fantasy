@@ -528,6 +528,14 @@ export function computeTeamScores(week: number): TeamScoreResult[] | { error: st
   const rules = getActiveScoringRules()!;
   const results: TeamScoreResult[] = [];
 
+  // Track started defenses for "least yards allowed" bonus
+  interface StartedDefense {
+    teamId: string;
+    rosterPlayerId: string;
+    yardsAllowed: number;
+  }
+  const startedDefenses: StartedDefense[] = [];
+
   const teams = db.prepare('SELECT id, name FROM teams').all() as { id: string; name: string }[];
 
   const games = db.prepare('SELECT id FROM games WHERE week = ?').all(week) as { id: string }[];
@@ -574,7 +582,15 @@ export function computeTeamScores(week: number): TeamScoreResult[] | { error: st
             points,
             breakdown
           });
-          if (isStarter) starterPoints += points;
+          if (isStarter) {
+            starterPoints += points;
+            // Track started defense for "least yards allowed" bonus
+            startedDefenses.push({
+              teamId: team.id,
+              rosterPlayerId: lineupEntry.roster_player_id,
+              yardsAllowed: defStats.yards_allowed
+            });
+          }
           else benchPoints += points;
         } else {
           playerScores.push({
@@ -625,11 +641,49 @@ export function computeTeamScores(week: number): TeamScoreResult[] | { error: st
       teamId: team.id,
       teamName: team.name,
       week,
-      starterPoints: Math.round(starterPoints * 100) / 100,
-      benchPoints: Math.round(benchPoints * 100) / 100,
-      totalPoints: Math.round((starterPoints + benchPoints) * 100) / 100,
+      starterPoints,
+      benchPoints,
+      totalPoints: starterPoints + benchPoints,
       playerScores
     });
+  }
+
+  // Award "least yards allowed" bonus to the defense with fewest yards
+  const leastYardsBonus = rules.bonuses?.defenseSpecialTeams?.leastTotalYardageAllowed;
+  if (leastYardsBonus && startedDefenses.length > 0) {
+    // Find the minimum yards allowed
+    const minYards = Math.min(...startedDefenses.map(d => d.yardsAllowed));
+    
+    // Find all defenses with that minimum (could be ties)
+    const winners = startedDefenses.filter(d => d.yardsAllowed === minYards);
+    
+    // Award bonus to winners
+    for (const winner of winners) {
+      const teamResult = results.find(r => r.teamId === winner.teamId);
+      if (teamResult) {
+        const defenseScore = teamResult.playerScores.find(
+          ps => ps.rosterPlayerId === winner.rosterPlayerId
+        );
+        if (defenseScore) {
+          defenseScore.points += leastYardsBonus;
+          defenseScore.breakdown.push({
+            category: 'Defense',
+            stat: 'Fewest Yards Allowed',
+            value: winner.yardsAllowed,
+            points: leastYardsBonus
+          });
+          teamResult.starterPoints += leastYardsBonus;
+          teamResult.totalPoints += leastYardsBonus;
+        }
+      }
+    }
+  }
+
+  // Round all point values
+  for (const result of results) {
+    result.starterPoints = Math.round(result.starterPoints * 100) / 100;
+    result.benchPoints = Math.round(result.benchPoints * 100) / 100;
+    result.totalPoints = Math.round(result.totalPoints * 100) / 100;
   }
 
   return results;
