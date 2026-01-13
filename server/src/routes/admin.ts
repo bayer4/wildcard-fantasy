@@ -1217,6 +1217,12 @@ router.delete('/cleanup/week/:week', (req: AuthRequest, res: Response) => {
 // Get all writeups
 router.get('/writeups', (_req: AuthRequest, res: Response) => {
   try {
+    // Check if table exists first
+    const tableExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='weekly_writeups'").get();
+    if (!tableExists) {
+      return res.json([]); // Return empty array if table doesn't exist yet
+    }
+    
     const writeups = db.prepare(`
       SELECT id, week, title, content, publish_at, created_at
       FROM weekly_writeups

@@ -32,9 +32,12 @@ export default function Writeups() {
   async function fetchWriteups() {
     try {
       const res = await api.get('/api/admin/writeups');
-      setWriteups(res.data);
+      // Ensure we have an array (migration may not have run yet)
+      setWriteups(Array.isArray(res.data) ? res.data : []);
     } catch (err: any) {
+      console.error('Writeups fetch error:', err);
       setError(err.response?.data?.error || 'Failed to fetch writeups');
+      setWriteups([]); // Reset to empty array on error
     } finally {
       setLoading(false);
     }

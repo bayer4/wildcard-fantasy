@@ -85,17 +85,27 @@ app.get('/api/public/writeup/:week', (req: Request, res: Response) => {
   const week = parseInt(req.params.week) || 1;
   const now = new Date().toISOString();
   
-  const writeup = db.prepare(`
-    SELECT id, week, title, content, publish_at
-    FROM weekly_writeups
-    WHERE week = ? AND publish_at <= ?
-  `).get(week, now) as { id: string; week: number; title: string; content: string; publish_at: string } | undefined;
-  
-  if (!writeup) {
-    return res.json({ writeup: null });
+  try {
+    // Check if table exists first
+    const tableExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='weekly_writeups'").get();
+    if (!tableExists) {
+      return res.json({ writeup: null });
+    }
+    
+    const writeup = db.prepare(`
+      SELECT id, week, title, content, publish_at
+      FROM weekly_writeups
+      WHERE week = ? AND publish_at <= ?
+    `).get(week, now) as { id: string; week: number; title: string; content: string; publish_at: string } | undefined;
+    
+    if (!writeup) {
+      return res.json({ writeup: null });
+    }
+    
+    res.json({ writeup });
+  } catch (error) {
+    res.json({ writeup: null });
   }
-  
-  res.json({ writeup });
 });
 
 // Public scoreboard endpoint (no auth required)
