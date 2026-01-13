@@ -34,7 +34,7 @@ export default function Writeups() {
 
   async function fetchWriteups() {
     try {
-      const res = await api.get('/api/admin/writeups');
+      const res = await api.get('/admin/writeups');
       // Ensure we have an array (migration may not have run yet)
       setWriteups(Array.isArray(res.data) ? res.data : []);
     } catch (err: any) {
@@ -78,7 +78,7 @@ export default function Writeups() {
       // Treat input as EST (UTC-5)
       const publishAt = new Date(`${publishDate}T${publishTime}:00-05:00`).toISOString();
       
-      await api.post('/api/admin/writeups', {
+      await api.post('/admin/writeups', {
         week,
         title,
         content,
@@ -99,7 +99,7 @@ export default function Writeups() {
     if (!confirm(`Delete writeup for week ${weekNum}?`)) return;
     
     try {
-      await api.delete(`/api/admin/writeups/${weekNum}`);
+      await api.delete(`/admin/writeups/${weekNum}`);
       setSuccess(`Deleted writeup for week ${weekNum}`);
       fetchWriteups();
     } catch (err: any) {
