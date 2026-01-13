@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Writeup {
   id: string;
@@ -75,41 +77,54 @@ export default function WriteupPopup({ week }: WriteupPopupProps) {
           
           {/* Content */}
           <div className="p-6 overflow-y-auto flex-1">
-            <div className="prose prose-invert prose-sm max-w-none">
-              {writeup.content.split('\n').map((line, i) => {
-                // Handle headers
-                if (line.startsWith('### ')) {
-                  return <h3 key={i} className="text-lg font-semibold text-amber-400 mt-4 mb-2">{line.slice(4)}</h3>;
-                }
-                if (line.startsWith('## ')) {
-                  return <h2 key={i} className="text-xl font-bold text-white mt-6 mb-3">{line.slice(3)}</h2>;
-                }
-                if (line.startsWith('# ')) {
-                  return <h1 key={i} className="text-2xl font-bold text-white mt-6 mb-3">{line.slice(2)}</h1>;
-                }
-                // Handle bullet points
-                if (line.startsWith('- ') || line.startsWith('* ')) {
-                  return (
-                    <div key={i} className="flex gap-2 text-slate-300 ml-4 my-1">
+            <div className="writeup-content">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  h1: ({ children }) => <h1 className="text-2xl font-bold text-white mt-6 mb-3">{children}</h1>,
+                  h2: ({ children }) => <h2 className="text-xl font-bold text-white mt-6 mb-3">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-lg font-semibold text-amber-400 mt-4 mb-2">{children}</h3>,
+                  p: ({ children }) => <p className="text-slate-300 my-3 leading-relaxed">{children}</p>,
+                  strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+                  em: ({ children }) => <em className="text-slate-200 italic">{children}</em>,
+                  ul: ({ children }) => <ul className="my-3 space-y-1">{children}</ul>,
+                  ol: ({ children }) => <ol className="my-3 space-y-1 list-decimal list-inside">{children}</ol>,
+                  li: ({ children }) => (
+                    <li className="text-slate-300 flex gap-2">
                       <span className="text-amber-400">•</span>
-                      <span>{line.slice(2)}</span>
+                      <span className="flex-1">{children}</span>
+                    </li>
+                  ),
+                  table: ({ children }) => (
+                    <div className="my-4 overflow-x-auto">
+                      <table className="w-full border-collapse border border-slate-600 rounded-lg overflow-hidden">
+                        {children}
+                      </table>
                     </div>
-                  );
-                }
-                // Handle bold text
-                const boldParsed = line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>');
-                // Empty line = paragraph break
-                if (line.trim() === '') {
-                  return <div key={i} className="h-3" />;
-                }
-                return (
-                  <p 
-                    key={i} 
-                    className="text-slate-300 my-2"
-                    dangerouslySetInnerHTML={{ __html: boldParsed }}
-                  />
-                );
-              })}
+                  ),
+                  thead: ({ children }) => <thead className="bg-slate-800">{children}</thead>,
+                  tbody: ({ children }) => <tbody>{children}</tbody>,
+                  tr: ({ children }) => <tr className="border-b border-slate-700">{children}</tr>,
+                  th: ({ children }) => (
+                    <th className="px-4 py-2 text-left text-amber-400 font-semibold border-r border-slate-700 last:border-r-0">
+                      {children}
+                    </th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="px-4 py-2 text-slate-300 border-r border-slate-700 last:border-r-0">
+                      {children}
+                    </td>
+                  ),
+                  hr: () => <hr className="my-6 border-slate-700" />,
+                  blockquote: ({ children }) => (
+                    <blockquote className="border-l-4 border-amber-500 pl-4 my-4 text-slate-400 italic">
+                      {children}
+                    </blockquote>
+                  ),
+                }}
+              >
+                {writeup.content}
+              </ReactMarkdown>
             </div>
           </div>
           

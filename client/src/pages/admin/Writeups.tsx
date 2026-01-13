@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Writeup {
   id: string;
@@ -16,6 +18,7 @@ export default function Writeups() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Form state
   const [week, setWeek] = useState(1);
@@ -207,15 +210,80 @@ export default function Writeups() {
         </div>
 
         <div>
-          <label className="block text-sm text-slate-400 mb-1">Content (Markdown supported)</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={12}
-            placeholder="Write your weekly recap here..."
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm"
-            required
-          />
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-sm text-slate-400">Content (Markdown supported)</label>
+            <button
+              type="button"
+              onClick={() => setShowPreview(!showPreview)}
+              className="text-xs text-amber-400 hover:text-amber-300"
+            >
+              {showPreview ? 'Hide Preview' : 'Show Preview'}
+            </button>
+          </div>
+          
+          <div className={showPreview ? 'grid grid-cols-2 gap-4' : ''}>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={16}
+              placeholder={`Paste your writeup here. Supports markdown:
+
+**Bold text** and *italic text*
+# Heading 1
+## Heading 2  
+### Heading 3
+
+- Bullet point
+- Another bullet
+
+| NFC | AFC |
+|-----|-----|
+| Team 1 | Team 2 |`}
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm"
+              required
+            />
+            
+            {showPreview && (
+              <div className="bg-slate-900 border border-slate-700 rounded-lg p-4 overflow-y-auto max-h-[400px]">
+                <div className="text-xs text-slate-500 mb-2 uppercase tracking-wide">Preview</div>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({ children }) => <h1 className="text-xl font-bold text-white mt-4 mb-2">{children}</h1>,
+                    h2: ({ children }) => <h2 className="text-lg font-bold text-white mt-4 mb-2">{children}</h2>,
+                    h3: ({ children }) => <h3 className="text-base font-semibold text-amber-400 mt-3 mb-1">{children}</h3>,
+                    p: ({ children }) => <p className="text-slate-300 my-2 text-sm leading-relaxed">{children}</p>,
+                    strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+                    em: ({ children }) => <em className="text-slate-200 italic">{children}</em>,
+                    ul: ({ children }) => <ul className="my-2 space-y-1">{children}</ul>,
+                    li: ({ children }) => (
+                      <li className="text-slate-300 text-sm flex gap-2">
+                        <span className="text-amber-400">•</span>
+                        <span className="flex-1">{children}</span>
+                      </li>
+                    ),
+                    table: ({ children }) => (
+                      <div className="my-3 overflow-x-auto">
+                        <table className="w-full border-collapse border border-slate-600 text-sm">
+                          {children}
+                        </table>
+                      </div>
+                    ),
+                    thead: ({ children }) => <thead className="bg-slate-800">{children}</thead>,
+                    tr: ({ children }) => <tr className="border-b border-slate-700">{children}</tr>,
+                    th: ({ children }) => <th className="px-3 py-1.5 text-left text-amber-400 font-semibold border-r border-slate-700 last:border-r-0">{children}</th>,
+                    td: ({ children }) => <td className="px-3 py-1.5 text-slate-300 border-r border-slate-700 last:border-r-0">{children}</td>,
+                  }}
+                >
+                  {content || '*Start typing to see preview...*'}
+                </ReactMarkdown>
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-2 text-xs text-slate-500">
+            Supports: **bold**, *italic*, # headings, - bullets, | tables |
+          </div>
         </div>
 
         <div className="flex gap-3">
