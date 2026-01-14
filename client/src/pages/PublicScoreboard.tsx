@@ -78,6 +78,7 @@ export default function PublicScoreboard() {
   const { teamId } = useParams<{ teamId?: string }>();
   const [week, setWeek] = useState(1);
   const [conferences, setConferences] = useState<Conference[]>([]);
+  const [allGamesFinal, setAllGamesFinal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<{ team: TeamDetail; starters: Starter[]; bench?: BenchPlayer[] } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -97,6 +98,7 @@ export default function PublicScoreboard() {
     try {
       const res = await publicApi.getScoreboard(week);
       setConferences(res.data.conferences);
+      setAllGamesFinal(res.data.allGamesFinal || false);
     } catch (err) {
       console.error('Failed to load scoreboard', err);
     } finally {
@@ -324,6 +326,7 @@ export default function PublicScoreboard() {
                     key={conference.id}
                     conference={conference}
                     isPoolRound={isPoolRound}
+                    allGamesFinal={allGamesFinal}
                     onTeamClick={handleTeamClick}
                   />
                 ))}
@@ -479,13 +482,14 @@ function FutureRoundCard({ roundName }: { roundName: string }) {
 interface ConferenceCardProps {
   conference: Conference;
   isPoolRound: boolean;
+  allGamesFinal: boolean;
   onTeamClick: (teamId: string) => void;
 }
 
-function ConferenceCard({ conference, isPoolRound, onTeamClick }: ConferenceCardProps) {
+function ConferenceCard({ conference, isPoolRound, allGamesFinal, onTeamClick }: ConferenceCardProps) {
   // Sort teams by score
   const sortedTeams = [...conference.teams].sort((a, b) => b.score - a.score);
-  const leader = sortedTeams[0];
+  const winner = sortedTeams[0];
   const hasScores = sortedTeams.some(t => t.score > 0);
 
   return (
@@ -510,10 +514,12 @@ function ConferenceCard({ conference, isPoolRound, onTeamClick }: ConferenceCard
               <p className="text-slate-500 text-sm">{sortedTeams.length} teams competing</p>
             </div>
           </div>
-          {hasScores && leader && (
+          {hasScores && winner && (
             <div className="text-right">
-              <div className="text-xs text-slate-500 uppercase tracking-wide">Leader</div>
-              <div className="text-amber-400 font-bold">{leader.name}</div>
+              <div className="text-xs text-slate-500 uppercase tracking-wide">
+                {allGamesFinal ? '🏆 Winner' : 'Leader'}
+              </div>
+              <div className="text-amber-400 font-bold">{winner.name}</div>
             </div>
           )}
         </div>

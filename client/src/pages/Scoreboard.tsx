@@ -33,6 +33,7 @@ interface ScoreboardData {
   week: number;
   conferences: Conference[];
   userTeam: { id: string; name: string; conferenceName: string } | null;
+  allGamesFinal?: boolean;
 }
 
 export default function Scoreboard() {
@@ -127,6 +128,7 @@ export default function Scoreboard() {
               conference={conference}
               userTeamId={user?.teamId || null}
               isPoolRound={isPoolRound}
+              allGamesFinal={data?.allGamesFinal || false}
               onTeamClick={handleTeamClick}
             />
           ))}
@@ -292,13 +294,14 @@ interface ConferenceCardProps {
   conference: Conference;
   userTeamId: string | null;
   isPoolRound: boolean;
+  allGamesFinal: boolean;
   onTeamClick: (teamId: string) => void;
 }
 
-function ConferenceCard({ conference, userTeamId, isPoolRound, onTeamClick }: ConferenceCardProps) {
+function ConferenceCard({ conference, userTeamId, isPoolRound, allGamesFinal, onTeamClick }: ConferenceCardProps) {
   // Sort teams by score
   const sortedTeams = [...conference.teams].sort((a, b) => b.score - a.score);
-  const leader = sortedTeams[0];
+  const winner = sortedTeams[0];
   const hasScores = sortedTeams.some(t => t.score > 0);
 
   return (
@@ -323,10 +326,12 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, onTeamClick }: Co
               <p className="text-slate-500 text-sm">{sortedTeams.length} teams competing</p>
             </div>
           </div>
-          {hasScores && leader && (
+          {hasScores && winner && (
             <div className="text-right">
-              <div className="text-xs text-slate-500 uppercase tracking-wide">Leader</div>
-              <div className="text-amber-400 font-bold">{leader.name}</div>
+              <div className="text-xs text-slate-500 uppercase tracking-wide">
+                {allGamesFinal ? '🏆 Winner' : 'Leader'}
+              </div>
+              <div className="text-amber-400 font-bold">{winner.name}</div>
             </div>
           )}
         </div>

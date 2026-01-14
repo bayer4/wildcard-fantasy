@@ -157,9 +157,19 @@ app.get('/api/public/scoreboard/:week', (req: Request, res: Response) => {
     });
   }
 
+  // Check if all games for the week are final
+  const gamesStatus = db.prepare(`
+    SELECT COUNT(*) as total, 
+           SUM(CASE WHEN LOWER(status) = 'final' THEN 1 ELSE 0 END) as final_count
+    FROM games WHERE week = ?
+  `).get(weekNum) as { total: number; final_count: number };
+  
+  const allGamesFinal = gamesStatus.total > 0 && gamesStatus.total === gamesStatus.final_count;
+
   res.json({
     week: weekNum,
     conferences: Object.values(conferences),
+    allGamesFinal,
   });
 });
 
