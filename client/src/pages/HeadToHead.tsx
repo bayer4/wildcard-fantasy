@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { publicApi } from '../lib/api';
+
+interface GameInfo {
+  opponent: string;
+  kickoffUtc: string;
+  gameStatus: string;
+  spreadHome: number | null;
+  total: number | null;
+  isHome: boolean;
+}
 
 interface Player {
   displayName: string;
@@ -9,6 +18,144 @@ interface Player {
   slot?: string;
   points: number;
   statLine?: string;
+  game?: GameInfo | null;
+}
+
+// Helper: check if player's game is live (reusable)
+function isPlayerLive(player: Player | undefined, debugLive: boolean, debugIndex?: number, currentIndex?: number): boolean {
+  if (!player) return false;
+  // Debug mode: force first player with a game to show as live
+  if (debugLive && player.game && debugIndex !== undefined && currentIndex !== undefined && currentIndex === debugIndex) {
+    return true;
+  }
+  if (!player.game) return false;
+  const status = player.game.gameStatus;
+  return status === 'in_progress' || status === 'IN_PROGRESS';
+}
+
+// Compact game info strip component
+function GameStrip({ game, muted = false, forceLive = false }: { game?: GameInfo | null; muted?: boolean; forceLive?: boolean }) {
+  if (!game) {
+    return <span className="text-slate-600" style={{ fontSize: '10px', lineHeight: '14px' }}>No game</span>;
+  }
+
+  const kickoff = new Date(game.kickoffUtc);
+  const isLive = forceLive || game.gameStatus === 'in_progress' || game.gameStatus === 'IN_PROGRESS';
+  const isFinal = game.gameStatus === 'final' || game.gameStatus === 'FINAL';
+  
+  const formatKickoff = () => {
+    if (isFinal) return 'Final';
+    if (isLive) return 'LIVE';
+    return kickoff.toLocaleString('en-US', {
+      weekday: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  };
+
+  const formatSpread = () => {
+    if (game.spreadHome === null) return null;
+    const spread = game.isHome ? game.spreadHome : -game.spreadHome;
+    if (spread === 0) return 'PK';
+    return spread > 0 ? `+${spread}` : spread.toString();
+  };
+
+  const spread = formatSpread();
+  const textColor = muted ? 'text-slate-600' : 'text-slate-500';
+  const dotColor = muted ? 'text-slate-700' : 'text-slate-600';
+
+  return (
+    <div className={`${textColor} flex items-center gap-1.5 flex-wrap`} style={{ fontSize: '10px', lineHeight: '14px' }}>
+      {isLive && (
+        <span className="relative flex h-2 w-2 mr-0.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+        </span>
+      )}
+      <span className={isLive ? 'text-green-400 font-semibold' : ''}>
+        {isLive ? 'LIVE' : game.opponent}
+      </span>
+      {!isLive && (
+        <>
+          <span className={dotColor}>•</span>
+          <span>{formatKickoff()}</span>
+        </>
+      )}
+      {isLive && (
+        <>
+          <span className="text-green-600">•</span>
+          <span className="text-green-400">{game.opponent}</span>
+        </>
+      )}
+      {!isFinal && !isLive && game.total !== null && (
+        <>
+          <span className={dotColor}>•</span>
+          <span>O/U {game.total}</span>
+        </>
+      )}
+      {!isFinal && !isLive && spread && (
+        <>
+          <span className={dotColor}>•</span>
+          <span>{spread}</span>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Player points display with live styling
+function PlayerPoints({ 
+  player, 
+  isLive, 
+  winning, 
+  losing, 
+  muted = false 
+}: { 
+  player: Player | undefined; 
+  isLive: boolean; 
+  winning?: boolean; 
+  losing?: boolean;
+  muted?: boolean;
+}) {
+  if (!player) {
+    return (
+      <div className="text-slate-700" style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
+        —
+      </div>
+    );
+  }
+
+  const hasPoints = player.points > 0;
+  
+  // Determine color based on state
+  let colorClass = muted ? 'text-slate-500' : 'text-white';
+  if (isLive) {
+    colorClass = 'text-green-400';
+  } else if (winning) {
+    colorClass = 'text-green-400';
+  } else if (losing) {
+    colorClass = 'text-red-400';
+  } else if (!hasPoints) {
+    colorClass = 'text-slate-700';
+  }
+
+  return (
+    <div className="text-right">
+      <div className={colorClass} style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
+        {hasPoints ? Math.round(player.points) : '—'}
+        {isLive && hasPoints && (
+          <span className="relative ml-1">
+            <span className="absolute -top-0.5 -right-1 h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+          </span>
+        )}
+      </div>
+      {isLive && player.statLine && (
+        <div className="text-green-400/70" style={{ fontSize: '9px', lineHeight: '12px' }}>
+          {player.statLine}
+        </div>
+      )}
+    </div>
+  );
 }
 
 interface TeamData {
@@ -56,10 +203,19 @@ const BRACKET_ORDER: Record<string, string[]> = {
 
 export default function HeadToHead() {
   const { week, conference, matchup } = useParams<{ week: string; conference: string; matchup: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [data, setData] = useState<MatchupData | null>(null);
   const [allMatchups, setAllMatchups] = useState<OtherMatchup[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Debug mode: ?debugLive=1 forces first player with a game to show as live
+  const debugLive = searchParams.get('debugLive') === '1';
+  
+  // Find the first player index that has a game (for debug mode)
+  const getDebugLiveIndex = (starters: Player[]): number => {
+    return starters.findIndex(p => p.game !== null && p.game !== undefined);
+  };
 
   useEffect(() => {
     loadMatchup();
@@ -339,25 +495,34 @@ export default function HeadToHead() {
                 const opponent = team2Starters.find(p => p.slot === slot);
                 const winning = player && opponent && player.points > opponent.points;
                 const losing = player && opponent && player.points < opponent.points;
+                const debugLiveIndex = getDebugLiveIndex(team1Starters);
+                const playerIndex = team1Starters.findIndex(p => p.slot === slot);
+                const isLive = isPlayerLive(player, debugLive, debugLiveIndex, playerIndex);
+                
+                // Row background: live takes precedence, then winning/losing
+                const rowBg = isLive ? 'bg-green-500/10' : winning ? 'bg-green-500/5' : losing ? 'bg-red-500/5' : '';
                 
                 return (
-                  <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${winning ? 'bg-green-500/5' : losing ? 'bg-red-500/5' : ''}`}>
+                  <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${rowBg}`}>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 text-[10px] font-semibold text-slate-500 uppercase">
+                      <div className={`w-10 text-[10px] font-semibold uppercase ${isLive ? 'text-green-400' : 'text-slate-500'}`}>
                         {SLOT_LABELS[slot]}
                       </div>
                       {player ? (
                         <div>
-                          <div className="text-white" style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                          <div className="text-slate-500" style={{ fontSize: '10px', lineHeight: '14px' }}>{player.nflTeam}</div>
+                          <div className={isLive ? 'text-green-400' : 'text-white'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                          <GameStrip game={player.game} forceLive={isLive} />
+                          {isLive && player.statLine && (
+                            <div className="text-green-400/70 mt-0.5" style={{ fontSize: '9px', lineHeight: '12px' }}>
+                              {player.statLine}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="text-slate-600" style={{ fontSize: '0.875rem', lineHeight: '1.25rem' }}>Empty</div>
                       )}
                     </div>
-                    <div className={winning ? 'text-green-400' : losing ? 'text-red-400' : player?.points ? 'text-white' : 'text-slate-700'} style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
-                      {player?.points ? Math.round(player.points) : '—'}
-                    </div>
+                    <PlayerPoints player={player} isLive={isLive} winning={winning} losing={losing} />
                   </div>
                 );
               })}
@@ -370,22 +535,28 @@ export default function HeadToHead() {
                   <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Bench</span>
                 </div>
                 <div className="divide-y divide-slate-800/20 bg-slate-900/30">
-                  {data.team1.bench.map((player, idx) => (
-                    <div key={idx} className="px-4 py-2.5 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 text-[10px] font-semibold text-slate-600 uppercase">
-                          {player.position}
+                  {data.team1.bench.map((player, idx) => {
+                    const isLive = isPlayerLive(player, debugLive, 0, idx === 0 ? 0 : -1);
+                    return (
+                      <div key={idx} className={`px-4 py-2.5 flex items-center justify-between ${isLive ? 'bg-green-500/5' : ''}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 text-[10px] font-semibold uppercase ${isLive ? 'text-green-500' : 'text-slate-600'}`}>
+                            {player.position}
+                          </div>
+                          <div>
+                            <div className={isLive ? 'text-green-400' : 'text-slate-400'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                            <GameStrip game={player.game} muted={!isLive} forceLive={isLive} />
+                            {isLive && player.statLine && (
+                              <div className="text-green-400/70 mt-0.5" style={{ fontSize: '9px', lineHeight: '12px' }}>
+                                {player.statLine}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-slate-400" style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                          <div className="text-slate-600" style={{ fontSize: '10px', lineHeight: '14px' }}>{player.nflTeam}</div>
-                        </div>
+                        <PlayerPoints player={player} isLive={isLive} muted={!isLive} />
                       </div>
-                      <div className="text-slate-500" style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
-                        {player.points ? Math.round(player.points) : '—'}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -404,25 +575,34 @@ export default function HeadToHead() {
                 const opponent = team1Starters.find(p => p.slot === slot);
                 const winning = player && opponent && player.points > opponent.points;
                 const losing = player && opponent && player.points < opponent.points;
+                const debugLiveIndex = getDebugLiveIndex(team2Starters);
+                const playerIndex = team2Starters.findIndex(p => p.slot === slot);
+                const isLive = isPlayerLive(player, debugLive, debugLiveIndex, playerIndex);
+                
+                // Row background: live takes precedence, then winning/losing
+                const rowBg = isLive ? 'bg-green-500/10' : winning ? 'bg-green-500/5' : losing ? 'bg-red-500/5' : '';
                 
                 return (
-                  <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${winning ? 'bg-green-500/5' : losing ? 'bg-red-500/5' : ''}`}>
+                  <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${rowBg}`}>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 text-[10px] font-semibold text-slate-500 uppercase">
+                      <div className={`w-10 text-[10px] font-semibold uppercase ${isLive ? 'text-green-400' : 'text-slate-500'}`}>
                         {SLOT_LABELS[slot]}
                       </div>
                       {player ? (
                         <div>
-                          <div className="text-white" style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                          <div className="text-slate-500" style={{ fontSize: '10px', lineHeight: '14px' }}>{player.nflTeam}</div>
+                          <div className={isLive ? 'text-green-400' : 'text-white'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                          <GameStrip game={player.game} forceLive={isLive} />
+                          {isLive && player.statLine && (
+                            <div className="text-green-400/70 mt-0.5" style={{ fontSize: '9px', lineHeight: '12px' }}>
+                              {player.statLine}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="text-slate-600" style={{ fontSize: '0.875rem', lineHeight: '1.25rem' }}>Empty</div>
                       )}
                     </div>
-                    <div className={winning ? 'text-green-400' : losing ? 'text-red-400' : player?.points ? 'text-white' : 'text-slate-700'} style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
-                      {player?.points ? Math.round(player.points) : '—'}
-                    </div>
+                    <PlayerPoints player={player} isLive={isLive} winning={winning} losing={losing} />
                   </div>
                 );
               })}
@@ -435,22 +615,28 @@ export default function HeadToHead() {
                   <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Bench</span>
                 </div>
                 <div className="divide-y divide-slate-800/20 bg-slate-900/30">
-                  {data.team2.bench.map((player, idx) => (
-                    <div key={idx} className="px-4 py-2.5 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 text-[10px] font-semibold text-slate-600 uppercase">
-                          {player.position}
+                  {data.team2.bench.map((player, idx) => {
+                    const isLive = isPlayerLive(player, debugLive, 0, idx === 0 ? 0 : -1);
+                    return (
+                      <div key={idx} className={`px-4 py-2.5 flex items-center justify-between ${isLive ? 'bg-green-500/5' : ''}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 text-[10px] font-semibold uppercase ${isLive ? 'text-green-500' : 'text-slate-600'}`}>
+                            {player.position}
+                          </div>
+                          <div>
+                            <div className={isLive ? 'text-green-400' : 'text-slate-400'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                            <GameStrip game={player.game} muted={!isLive} forceLive={isLive} />
+                            {isLive && player.statLine && (
+                              <div className="text-green-400/70 mt-0.5" style={{ fontSize: '9px', lineHeight: '12px' }}>
+                                {player.statLine}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-slate-400" style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                          <div className="text-slate-600" style={{ fontSize: '10px', lineHeight: '14px' }}>{player.nflTeam}</div>
-                        </div>
+                        <PlayerPoints player={player} isLive={isLive} muted={!isLive} />
                       </div>
-                      <div className="text-slate-500" style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
-                        {player.points ? Math.round(player.points) : '—'}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
