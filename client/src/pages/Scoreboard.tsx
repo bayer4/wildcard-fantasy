@@ -489,28 +489,31 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, week, onTeamClick
             <div className="text-xs text-amber-400/80 font-semibold uppercase tracking-wider mb-3 text-center">
               Semifinal 1
             </div>
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center">
               {/* Team 1 */}
-              <div className={`flex items-center gap-3 flex-1 justify-end ${sortedTeams[0]?.id === userTeamId ? 'text-emerald-400' : ''}`}>
-                <div>
-                  <span className={`font-semibold ${sortedTeams[0]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[0]?.name}</span>
-                  {sortedTeams[0]?.id === userTeamId && <span className="ml-2 text-xs text-emerald-400">(You)</span>}
+              <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
+                <div className="truncate text-right">
+                  <span className={`font-semibold text-sm ${sortedTeams[0]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>
+                    {sortedTeams[0]?.name}
+                  </span>
+                  {sortedTeams[0]?.id === userTeamId && <span className="ml-1 text-xs text-emerald-400">(You)</span>}
                 </div>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-gradient-to-br from-amber-500 to-yellow-500 text-black">
+                <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-amber-500 to-yellow-500 text-black">
                   1
                 </div>
               </div>
-              
-              <span className="text-slate-500 font-medium text-sm px-2">vs</span>
-              
-              {/* Team 4 */}
-              <div className={`flex items-center gap-3 flex-1 ${sortedTeams[1]?.id === userTeamId ? 'text-emerald-400' : ''}`}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-gradient-to-br from-slate-700 to-slate-600 text-slate-300">
+              {/* VS */}
+              <span className="text-slate-600 font-medium text-xs px-3 flex-shrink-0">vs</span>
+              {/* Team 2 */}
+              <div className="flex-1 flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-slate-700 to-slate-600 text-slate-300">
                   4
                 </div>
-                <div>
-                  <span className={`font-semibold ${sortedTeams[1]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[1]?.name}</span>
-                  {sortedTeams[1]?.id === userTeamId && <span className="ml-2 text-xs text-emerald-400">(You)</span>}
+                <div className="truncate">
+                  <span className={`font-semibold text-sm ${sortedTeams[1]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>
+                    {sortedTeams[1]?.name}
+                  </span>
+                  {sortedTeams[1]?.id === userTeamId && <span className="ml-1 text-xs text-emerald-400">(You)</span>}
                 </div>
               </div>
             </div>
@@ -524,28 +527,31 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, week, onTeamClick
             <div className="text-xs text-amber-400/80 font-semibold uppercase tracking-wider mb-3 text-center">
               Semifinal 2
             </div>
-            <div className="flex items-center justify-center gap-4">
-              {/* Team 2 */}
-              <div className={`flex items-center gap-3 flex-1 justify-end ${sortedTeams[2]?.id === userTeamId ? 'text-emerald-400' : ''}`}>
-                <div>
-                  <span className={`font-semibold ${sortedTeams[2]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[2]?.name}</span>
-                  {sortedTeams[2]?.id === userTeamId && <span className="ml-2 text-xs text-emerald-400">(You)</span>}
+            <div className="flex items-center">
+              {/* Team 1 */}
+              <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
+                <div className="truncate text-right">
+                  <span className={`font-semibold text-sm ${sortedTeams[2]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>
+                    {sortedTeams[2]?.name}
+                  </span>
+                  {sortedTeams[2]?.id === userTeamId && <span className="ml-1 text-xs text-emerald-400">(You)</span>}
                 </div>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-gradient-to-br from-slate-400 to-slate-300 text-black">
+                <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-slate-400 to-slate-300 text-black">
                   2
                 </div>
               </div>
-              
-              <span className="text-slate-500 font-medium text-sm px-2">vs</span>
-              
-              {/* Team 3 */}
-              <div className={`flex items-center gap-3 flex-1 ${sortedTeams[3]?.id === userTeamId ? 'text-emerald-400' : ''}`}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-gradient-to-br from-orange-700 to-amber-700 text-white">
+              {/* VS */}
+              <span className="text-slate-600 font-medium text-xs px-3 flex-shrink-0">vs</span>
+              {/* Team 2 */}
+              <div className="flex-1 flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-orange-700 to-amber-700 text-white">
                   3
                 </div>
-                <div>
-                  <span className={`font-semibold ${sortedTeams[3]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[3]?.name}</span>
-                  {sortedTeams[3]?.id === userTeamId && <span className="ml-2 text-xs text-emerald-400">(You)</span>}
+                <div className="truncate">
+                  <span className={`font-semibold text-sm ${sortedTeams[3]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>
+                    {sortedTeams[3]?.name}
+                  </span>
+                  {sortedTeams[3]?.id === userTeamId && <span className="ml-1 text-xs text-emerald-400">(You)</span>}
                 </div>
               </div>
             </div>
