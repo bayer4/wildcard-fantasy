@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { publicApi } from '../lib/api';
 import WriteupPopup from '../components/WriteupPopup';
+import SuperBowlWinnerPopup from '../components/SuperBowlWinnerPopup';
 
 const ROUND_NAMES: Record<number, string> = {
   1: 'Wildcard',
@@ -387,6 +388,16 @@ export default function PublicScoreboard() {
 
       {/* Weekly Writeup Popup - only shows for current week, not historical */}
       <WriteupPopup week={week} currentWeek={currentWeek ?? undefined} />
+
+      {/* Super Bowl Winner Easter Egg */}
+      <SuperBowlWinnerPopup 
+        week={week} 
+        winnerName={
+          week === 4 && conferences.length > 0
+            ? [...conferences.flatMap(c => c.teams)].sort((a, b) => b.score - a.score)[0]?.name || null
+            : null
+        }
+      />
     </div>
   );
 }
