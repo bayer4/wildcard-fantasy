@@ -120,7 +120,9 @@ export default function Scoreboard() {
       </div>
 
       {/* Conference Pools - only show if round is active */}
-      {ACTIVE_ROUNDS.includes(selectedWeek) ? (
+      {selectedWeek === 1 ? (
+        <WildcardHistoricalResults />
+      ) : ACTIVE_ROUNDS.includes(selectedWeek) ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {data?.conferences.map((conference) => (
             <ConferenceCard
@@ -287,6 +289,134 @@ function FutureRoundCard({ roundName }: { roundName: string }) {
         </div>
       </div>
 
+    </div>
+  );
+}
+
+// Historical Wildcard Results (Week 1 - completed)
+const WILDCARD_RESULTS = {
+  NFC: [
+    { name: "CMFers", score: 56, isWinner: true },
+    { name: "Leroy Kelly", score: 55, isWinner: false },
+    { name: "Glass Funyon", score: 51, isWinner: false },
+    { name: "Greyhounds", score: 47, isWinner: false },
+  ],
+  AFC: [
+    { name: "Pole Patrol", score: 72, isWinner: true },
+    { name: "Dischargers", score: 57, isWinner: false },
+    { name: "Bald Eagles", score: 43, isWinner: false },
+    { name: "Fighting Irish", score: 31, isWinner: false },
+  ],
+};
+
+function WildcardHistoricalResults() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* AFC Pool */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
+        <div className="px-6 py-5 border-b border-slate-700/50 bg-gradient-to-r from-red-600/20 to-red-900/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg bg-red-500/20 text-red-400">
+                AFC
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">AFC Pool</h2>
+                <p className="text-slate-500 text-sm">4 teams competed</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-slate-500 uppercase tracking-wide">🏆 Winner</div>
+              <div className="text-amber-400 font-bold">Pole Patrol</div>
+            </div>
+          </div>
+        </div>
+        <div className="divide-y divide-slate-800/50">
+          {WILDCARD_RESULTS.AFC.map((team, index) => (
+            <div
+              key={team.name}
+              className={`px-6 py-4 flex items-center justify-between ${
+                team.isWinner ? 'bg-amber-500/5' : ''
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
+                  index === 0 ? 'bg-amber-500 text-black' :
+                  index === 1 ? 'bg-slate-600 text-white' :
+                  index === 2 ? 'bg-orange-700 text-white' :
+                  'bg-slate-700 text-slate-400'
+                }`}>
+                  {index + 1}
+                </div>
+                <div>
+                  <h3 className={`font-semibold ${team.isWinner ? 'text-amber-400' : 'text-white'}`}>
+                    {team.name} {team.isWinner && '🏆'}
+                  </h3>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className={`text-2xl font-black ${team.isWinner ? 'text-amber-400' : 'text-white'}`}>
+                  {team.score}
+                </div>
+                <div className="text-slate-600 text-xs uppercase">pts</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* NFC Pool */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
+        <div className="px-6 py-5 border-b border-slate-700/50 bg-gradient-to-r from-blue-600/20 to-blue-900/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg bg-blue-500/20 text-blue-400">
+                NFC
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">NFC Pool</h2>
+                <p className="text-slate-500 text-sm">4 teams competed</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-slate-500 uppercase tracking-wide">🏆 Winner</div>
+              <div className="text-amber-400 font-bold">CMFers</div>
+            </div>
+          </div>
+        </div>
+        <div className="divide-y divide-slate-800/50">
+          {WILDCARD_RESULTS.NFC.map((team, index) => (
+            <div
+              key={team.name}
+              className={`px-6 py-4 flex items-center justify-between ${
+                team.isWinner ? 'bg-amber-500/5' : ''
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
+                  index === 0 ? 'bg-amber-500 text-black' :
+                  index === 1 ? 'bg-slate-600 text-white' :
+                  index === 2 ? 'bg-orange-700 text-white' :
+                  'bg-slate-700 text-slate-400'
+                }`}>
+                  {index + 1}
+                </div>
+                <div>
+                  <h3 className={`font-semibold ${team.isWinner ? 'text-amber-400' : 'text-white'}`}>
+                    {team.name} {team.isWinner && '🏆'}
+                  </h3>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className={`text-2xl font-black ${team.isWinner ? 'text-amber-400' : 'text-white'}`}>
+                  {team.score}
+                </div>
+                <div className="text-slate-600 text-xs uppercase">pts</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
