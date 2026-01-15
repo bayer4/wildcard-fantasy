@@ -23,6 +23,12 @@ const SLOT_LABELS: Record<string, string> = {
 
 const SLOT_ORDER = ['QB', 'RB', 'WRTE', 'FLEX1', 'FLEX2', 'FLEX3', 'K', 'DEF'];
 
+// Draft order for Divisional round (week 2)
+const DIVISIONAL_DRAFT_ORDER: Record<string, string[]> = {
+  NFC: ["Sacks and the City", "Masters of the Universe", "Stacy's Mom", "CMFers"],
+  AFC: ["Bash Brothers", "Nemesis Enforcer", "Monday Morning QBs", "Pole Patrol"],
+};
+
 interface GameInfo {
   gameId: string;
   opponent: string;
@@ -296,7 +302,18 @@ export default function Matchup() {
           <h2 className="text-lg font-semibold text-white">{data.team.conferenceName} Pool Standings</h2>
         </div>
         <div className="grid grid-cols-4 gap-1 p-2">
-          {data.conferencePool.map((team, index) => (
+          {[...data.conferencePool].sort((a, b) => {
+            const hasScores = data.conferencePool.some(t => t.score > 0);
+            if (hasScores) {
+              return b.score - a.score; // Sort by score when games have started
+            }
+            // Use draft order for week 2 before scores
+            if (weekNum === 2) {
+              const order = DIVISIONAL_DRAFT_ORDER[data.team.conferenceName] || [];
+              return order.indexOf(a.name) - order.indexOf(b.name);
+            }
+            return 0;
+          }).map((team, index) => (
             <button
               key={team.id}
               onClick={() => team.id !== teamId && navigate(`/matchup/${weekNum}/${team.id}`)}
