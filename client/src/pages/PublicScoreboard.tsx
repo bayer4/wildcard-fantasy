@@ -77,7 +77,8 @@ interface BenchPlayer {
 export default function PublicScoreboard() {
   const navigate = useNavigate();
   const { teamId } = useParams<{ teamId?: string }>();
-  const [week, setWeek] = useState<number | null>(null); // Will be set from API
+  const [week, setWeek] = useState<number | null>(null); // Currently viewed week
+  const [currentWeek, setCurrentWeek] = useState<number | null>(null); // Actual current week from admin
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [allGamesFinal, setAllGamesFinal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<{ team: TeamDetail; starters: Starter[]; bench?: BenchPlayer[] } | null>(null);
@@ -88,9 +89,12 @@ export default function PublicScoreboard() {
     const fetchCurrentWeek = async () => {
       try {
         const res = await axios.get('/api/public/league');
-        setWeek(res.data.currentWeek || 2);
+        const adminWeek = res.data.currentWeek || 2;
+        setWeek(adminWeek);
+        setCurrentWeek(adminWeek);
       } catch {
         setWeek(2); // Fallback to Divisional
+        setCurrentWeek(2);
       }
     };
     fetchCurrentWeek();
@@ -381,8 +385,8 @@ export default function PublicScoreboard() {
         </div>
       </main>
 
-      {/* Weekly Writeup Popup */}
-      <WriteupPopup week={week} />
+      {/* Weekly Writeup Popup - only shows for current week, not historical */}
+      <WriteupPopup week={week} currentWeek={currentWeek ?? undefined} />
     </div>
   );
 }

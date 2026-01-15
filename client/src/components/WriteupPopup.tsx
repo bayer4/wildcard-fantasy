@@ -13,20 +13,27 @@ interface Writeup {
 
 interface WriteupPopupProps {
   week: number;
+  currentWeek?: number; // The actual current week from admin settings
 }
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-export default function WriteupPopup({ week }: WriteupPopupProps) {
+export default function WriteupPopup({ week, currentWeek }: WriteupPopupProps) {
   const [writeup, setWriteup] = useState<Writeup | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     checkForWriteup();
-  }, [week]);
+  }, [week, currentWeek]);
 
   async function checkForWriteup() {
+    // Only show popup for current week, not when viewing historical weeks
+    // If currentWeek is provided and doesn't match viewed week, skip
+    if (currentWeek !== undefined && week !== currentWeek) {
+      return;
+    }
+
     // Check if user has dismissed this week's writeup
     const dismissedKey = `writeup-dismissed-${week}`;
     if (localStorage.getItem(dismissedKey)) {
