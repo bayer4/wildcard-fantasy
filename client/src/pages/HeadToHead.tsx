@@ -16,6 +16,7 @@ interface TeamData {
   name: string;
   totalPoints: number;
   starters: Player[];
+  bench: Player[];
 }
 
 interface MatchupData {
@@ -140,12 +141,14 @@ export default function HeadToHead() {
           name: team1Res.data.team.name,
           totalPoints: team1Res.data.team.totalPoints || 0,
           starters: team1Res.data.starters || [],
+          bench: team1Res.data.bench || [],
         },
         team2: {
           id: team2Id,
           name: team2Res.data.team.name,
           totalPoints: team2Res.data.team.totalPoints || 0,
           starters: team2Res.data.starters || [],
+          bench: team2Res.data.bench || [],
         },
         conference: conference || '',
         matchupNum,
@@ -345,22 +348,47 @@ export default function HeadToHead() {
                       </div>
                       {player ? (
                         <div>
-                          <div className="font-medium text-white text-sm">{player.displayName}</div>
-                          <div className="text-[10px] text-slate-500">{player.nflTeam}</div>
+                          <div className="text-white" style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                          <div className="text-slate-500" style={{ fontSize: '10px', lineHeight: '14px' }}>{player.nflTeam}</div>
                         </div>
                       ) : (
-                        <div className="text-slate-600 text-xs">Empty</div>
+                        <div className="text-slate-600" style={{ fontSize: '0.875rem', lineHeight: '1.25rem' }}>Empty</div>
                       )}
                     </div>
-                    <div className={`text-lg font-bold ${
-                      winning ? 'text-green-400' : losing ? 'text-red-400' : player?.points ? 'text-white' : 'text-slate-700'
-                    }`}>
+                    <div className={winning ? 'text-green-400' : losing ? 'text-red-400' : player?.points ? 'text-white' : 'text-slate-700'} style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
                       {player?.points ? Math.round(player.points) : '—'}
                     </div>
                   </div>
                 );
               })}
             </div>
+            
+            {/* Bench Section */}
+            {data.team1.bench.length > 0 && (
+              <div className="mt-2 border-t border-slate-700/50">
+                <div className="px-4 py-2.5 bg-slate-800/40">
+                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Bench</span>
+                </div>
+                <div className="divide-y divide-slate-800/20 bg-slate-900/30">
+                  {data.team1.bench.map((player, idx) => (
+                    <div key={idx} className="px-4 py-2.5 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 text-[10px] font-semibold text-slate-600 uppercase">
+                          {player.position}
+                        </div>
+                        <div>
+                          <div className="text-slate-400" style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                          <div className="text-slate-600" style={{ fontSize: '10px', lineHeight: '14px' }}>{player.nflTeam}</div>
+                        </div>
+                      </div>
+                      <div className="text-slate-500" style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
+                        {player.points ? Math.round(player.points) : '—'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Team 2 Lineup */}
@@ -385,22 +413,47 @@ export default function HeadToHead() {
                       </div>
                       {player ? (
                         <div>
-                          <div className="font-medium text-white text-sm">{player.displayName}</div>
-                          <div className="text-[10px] text-slate-500">{player.nflTeam}</div>
+                          <div className="text-white" style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                          <div className="text-slate-500" style={{ fontSize: '10px', lineHeight: '14px' }}>{player.nflTeam}</div>
                         </div>
                       ) : (
-                        <div className="text-slate-600 text-xs">Empty</div>
+                        <div className="text-slate-600" style={{ fontSize: '0.875rem', lineHeight: '1.25rem' }}>Empty</div>
                       )}
                     </div>
-                    <div className={`text-lg font-bold ${
-                      winning ? 'text-green-400' : losing ? 'text-red-400' : player?.points ? 'text-white' : 'text-slate-700'
-                    }`}>
+                    <div className={winning ? 'text-green-400' : losing ? 'text-red-400' : player?.points ? 'text-white' : 'text-slate-700'} style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
                       {player?.points ? Math.round(player.points) : '—'}
                     </div>
                   </div>
                 );
               })}
             </div>
+            
+            {/* Bench Section */}
+            {data.team2.bench.length > 0 && (
+              <div className="mt-2 border-t border-slate-700/50">
+                <div className="px-4 py-2.5 bg-slate-800/40">
+                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Bench</span>
+                </div>
+                <div className="divide-y divide-slate-800/20 bg-slate-900/30">
+                  {data.team2.bench.map((player, idx) => (
+                    <div key={idx} className="px-4 py-2.5 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 text-[10px] font-semibold text-slate-600 uppercase">
+                          {player.position}
+                        </div>
+                        <div>
+                          <div className="text-slate-400" style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                          <div className="text-slate-600" style={{ fontSize: '10px', lineHeight: '14px' }}>{player.nflTeam}</div>
+                        </div>
+                      </div>
+                      <div className="text-slate-500" style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
+                        {player.points ? Math.round(player.points) : '—'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
