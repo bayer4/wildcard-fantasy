@@ -660,7 +660,7 @@ interface ConferenceCardProps {
   onMatchupClick: (conference: string, matchupNum: number) => void;
 }
 
-function ConferenceCard({ conference, isPoolRound, allGamesFinal, week, onTeamClick, onMatchupClick }: ConferenceCardProps) {
+function ConferenceCard({ conference, isPoolRound, week, onTeamClick, onMatchupClick }: ConferenceCardProps) {
   const hasScores = conference.teams.some(t => t.score > 0);
   
   // Sort teams: by score if scores exist, otherwise by draft order for divisional
