@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import axios from 'axios';
 import { publicApi } from '../lib/api';
 import WriteupPopup from '../components/WriteupPopup';
 
@@ -76,18 +77,33 @@ interface BenchPlayer {
 export default function PublicScoreboard() {
   const navigate = useNavigate();
   const { teamId } = useParams<{ teamId?: string }>();
-  const [week, setWeek] = useState(2); // Default to current round (Divisional)
+  const [week, setWeek] = useState<number | null>(null); // Will be set from API
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [allGamesFinal, setAllGamesFinal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<{ team: TeamDetail; starters: Starter[]; bench?: BenchPlayer[] } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch current week from admin settings on mount
   useEffect(() => {
-    loadScoreboard();
+    const fetchCurrentWeek = async () => {
+      try {
+        const res = await axios.get('/api/public/league');
+        setWeek(res.data.currentWeek || 2);
+      } catch {
+        setWeek(2); // Fallback to Divisional
+      }
+    };
+    fetchCurrentWeek();
+  }, []);
+
+  useEffect(() => {
+    if (week !== null) {
+      loadScoreboard();
+    }
   }, [week]);
 
   useEffect(() => {
-    if (teamId) {
+    if (teamId && week !== null) {
       loadTeam(teamId);
     } else {
       setSelectedTeam(null);
@@ -95,6 +111,7 @@ export default function PublicScoreboard() {
   }, [teamId, week]);
 
   const loadScoreboard = async () => {
+    if (week === null) return;
     try {
       const res = await publicApi.getScoreboard(week);
       setConferences(res.data.conferences);
@@ -107,6 +124,7 @@ export default function PublicScoreboard() {
   };
 
   const loadTeam = async (id: string) => {
+    if (week === null) return;
     try {
       const res = await publicApi.getTeam(id, week);
       setSelectedTeam(res.data);
@@ -119,6 +137,15 @@ export default function PublicScoreboard() {
   const handleTeamClick = (id: string) => {
     navigate(`/live/${id}`);
   };
+
+  // Wait for week to be loaded
+  if (week === null) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-slate-400">Loading...</div>
+      </div>
+    );
+  }
 
   const roundName = ROUND_NAMES[week] || `Week ${week}`;
   const isPoolRound = week === 1;

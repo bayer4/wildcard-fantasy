@@ -80,6 +80,12 @@ app.get('/api/games', (req: Request, res: Response) => {
   res.json({ week, games });
 });
 
+// Public endpoint to get current week setting
+app.get('/api/public/league', (_req: Request, res: Response) => {
+  const settings = db.prepare('SELECT current_week FROM league_settings WHERE id = ?').get('default') as { current_week: number } | undefined;
+  res.json({ currentWeek: settings?.current_week || 1 });
+});
+
 // Public writeup endpoint - returns the active writeup for a week if publish time has passed
 app.get('/api/public/writeup/:week', (req: Request, res: Response) => {
   const week = parseInt(req.params.week) || 1;
