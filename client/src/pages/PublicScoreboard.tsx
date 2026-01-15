@@ -170,19 +170,7 @@ export default function PublicScoreboard() {
                 <p className="text-slate-500 text-sm">BCFL 2025 Playoffs</p>
               </div>
             </Link>
-            <div className="relative group">
-              <Link
-                to="/login"
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors inline-block"
-              >
-                Team Login
-              </Link>
-              <div className="absolute right-0 top-full mt-2 w-64 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <p className="text-xs text-slate-400">
-                  <span className="text-amber-400 font-medium">For playoff teams only.</span> If you're competing this round, login to manage your roster.
-                </p>
-              </div>
-            </div>
+            {/* Team Login button hidden for now */}
           </div>
         </div>
       </header>
