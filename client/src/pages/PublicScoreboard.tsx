@@ -467,7 +467,7 @@ function FutureRoundCard({ roundName }: { roundName: string }) {
           </svg>
         </div>
         <h2 className="text-2xl font-bold text-white mb-2">Conference Championships</h2>
-        <p className="text-slate-400 mb-6">Divisional winners advance with their enhanced rosters</p>
+        <p className="text-slate-400 mb-6">Divisional winners face off for the conference title</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-5">
