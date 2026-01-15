@@ -365,6 +365,7 @@ export default function PublicScoreboard() {
                     allGamesFinal={allGamesFinal}
                     week={week}
                     onTeamClick={handleTeamClick}
+                    onMatchupClick={(conf, matchupNum) => navigate(`/h2h/${week}/${conf}/${matchupNum}`)}
                   />
                 ))}
               </div>
@@ -656,9 +657,10 @@ interface ConferenceCardProps {
   allGamesFinal: boolean;
   week: number;
   onTeamClick: (teamId: string) => void;
+  onMatchupClick: (conference: string, matchupNum: number) => void;
 }
 
-function ConferenceCard({ conference, isPoolRound, allGamesFinal, week, onTeamClick }: ConferenceCardProps) {
+function ConferenceCard({ conference, isPoolRound, allGamesFinal, week, onTeamClick, onMatchupClick }: ConferenceCardProps) {
   const hasScores = conference.teams.some(t => t.score > 0);
   
   // Sort teams: by score if scores exist, otherwise by draft order for divisional
@@ -713,71 +715,55 @@ function ConferenceCard({ conference, isPoolRound, allGamesFinal, week, onTeamCl
       {week === 2 && !hasScores ? (
         <div className="p-4 space-y-4">
           {/* Matchup 1: #1 vs #4 */}
-          <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
-            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-2 text-center">
-              Semifinal 1
+          <div 
+            onClick={() => onMatchupClick(conference.name, 1)}
+            className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group"
+          >
+            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-2 text-center flex items-center justify-center gap-2">
+              <span>Semifinal 1</span>
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400">• View Matchup</span>
             </div>
-            {sortedTeams.slice(0, 2).map((team, index) => (
-              <div
-                key={team.id}
-                onClick={() => onTeamClick(team.id)}
-                className={`px-4 py-3 flex items-center justify-between cursor-pointer transition-all hover:bg-slate-700/50 rounded-lg ${
-                  index === 0 ? '' : 'mt-1'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
-                    index === 0 ? 'bg-amber-500 text-black' : 'bg-slate-600 text-white'
-                  }`}>
-                    #{index === 0 ? '1' : '4'}
-                  </div>
-                  <span className="font-semibold text-white">{team.name}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs bg-amber-500 text-black">
+                  #1
                 </div>
-                <div className="flex items-center gap-3">
-                  {team.minutesLeft !== undefined && team.minutesLeft > 0 && (
-                    <span className="text-xs text-slate-500">{team.minutesLeft}m</span>
-                  )}
-                  <span className="text-xl font-black text-slate-600">—</span>
-                  <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                <span className="font-semibold text-white">{sortedTeams[0]?.name}</span>
+              </div>
+              <div className="text-xl font-black text-slate-500 px-4">vs</div>
+              <div className="flex items-center gap-3 flex-1 justify-end">
+                <span className="font-semibold text-white">{sortedTeams[1]?.name}</span>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs bg-slate-600 text-white">
+                  #4
                 </div>
               </div>
-            ))}
+            </div>
           </div>
           
           {/* Matchup 2: #2 vs #3 */}
-          <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
-            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-2 text-center">
-              Semifinal 2
+          <div 
+            onClick={() => onMatchupClick(conference.name, 2)}
+            className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group"
+          >
+            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-2 text-center flex items-center justify-center gap-2">
+              <span>Semifinal 2</span>
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400">• View Matchup</span>
             </div>
-            {sortedTeams.slice(2, 4).map((team, index) => (
-              <div
-                key={team.id}
-                onClick={() => onTeamClick(team.id)}
-                className={`px-4 py-3 flex items-center justify-between cursor-pointer transition-all hover:bg-slate-700/50 rounded-lg ${
-                  index === 0 ? '' : 'mt-1'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
-                    index === 0 ? 'bg-slate-500 text-white' : 'bg-orange-700 text-white'
-                  }`}>
-                    #{index === 0 ? '2' : '3'}
-                  </div>
-                  <span className="font-semibold text-white">{team.name}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs bg-slate-500 text-white">
+                  #2
                 </div>
-                <div className="flex items-center gap-3">
-                  {team.minutesLeft !== undefined && team.minutesLeft > 0 && (
-                    <span className="text-xs text-slate-500">{team.minutesLeft}m</span>
-                  )}
-                  <span className="text-xl font-black text-slate-600">—</span>
-                  <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                <span className="font-semibold text-white">{sortedTeams[2]?.name}</span>
+              </div>
+              <div className="text-xl font-black text-slate-500 px-4">vs</div>
+              <div className="flex items-center gap-3 flex-1 justify-end">
+                <span className="font-semibold text-white">{sortedTeams[3]?.name}</span>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs bg-orange-700 text-white">
+                  #3
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       ) : (

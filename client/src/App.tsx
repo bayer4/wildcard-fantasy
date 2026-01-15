@@ -26,6 +26,7 @@ import TeamScores from './pages/team/Scores';
 import Standings from './pages/Standings';
 import Scoreboard from './pages/Scoreboard';
 import Matchup from './pages/Matchup';
+import HeadToHead from './pages/HeadToHead';
 import Settings from './pages/Settings';
 import PublicScoreboard from './pages/PublicScoreboard';
 
@@ -96,6 +97,7 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/live" element={<PublicScoreboard />} />
         <Route path="/live/:teamId" element={<PublicScoreboard />} />
+        <Route path="/h2h/:week/:conference/:matchup" element={<HeadToHead />} />
 
         {/* Root redirect */}
         <Route path="/" element={<RoleRedirect />} />
