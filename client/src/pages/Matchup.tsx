@@ -23,10 +23,10 @@ const SLOT_LABELS: Record<string, string> = {
 
 const SLOT_ORDER = ['QB', 'RB', 'WRTE', 'FLEX1', 'FLEX2', 'FLEX3', 'K', 'DEF'];
 
-// Draft order for Divisional round (week 2)
+// Bracket order for Divisional round (week 2) - 1v4, 2v3 matchups
 const DIVISIONAL_DRAFT_ORDER: Record<string, string[]> = {
-  NFC: ["Sacks and the City", "Masters of the Universe", "Stacy's Mom", "CMFers"],
-  AFC: ["Bash Brothers", "Nemesis Enforcer", "Monday Morning QBs", "Pole Patrol"],
+  NFC: ["Sacks and the City", "CMFers", "Masters of the Universe", "Stacy's Mom"],
+  AFC: ["Bash Brothers", "Pole Patrol", "Nemesis Enforcer", "Monday Morning QBs"],
 };
 
 interface GameInfo {
