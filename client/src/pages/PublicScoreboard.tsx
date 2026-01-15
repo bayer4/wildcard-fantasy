@@ -22,7 +22,7 @@ const SLOT_LABELS: Record<string, string> = {
 };
 
 // Which rounds have been drafted/seeded
-const ACTIVE_ROUNDS = [1]; // Only Wildcard is active for now
+const ACTIVE_ROUNDS = [1, 2]; // Wildcard and Divisional
 
 interface Team {
   id: string;
