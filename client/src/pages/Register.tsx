@@ -45,7 +45,7 @@ export default function Register() {
         <div className="text-center mb-8">
           <span className="text-6xl">🏈</span>
           <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-            Wildcard Fantasy
+            2025 BCFL Playoffs
           </h1>
           <p className="mt-2 text-slate-400">Create your account</p>
         </div>

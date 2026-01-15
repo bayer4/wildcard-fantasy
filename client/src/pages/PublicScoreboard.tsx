@@ -163,12 +163,9 @@ export default function PublicScoreboard() {
           <div className="flex items-center justify-between">
             <Link to="/live" className="flex items-center gap-3">
               <span className="text-3xl">🏈</span>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-                  Wildcard Fantasy
-                </h1>
-                <p className="text-slate-500 text-sm">BCFL 2025 Playoffs</p>
-              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                2025 BCFL Playoffs
+              </h1>
             </Link>
             {/* Team Login button hidden for now */}
           </div>
@@ -368,10 +365,6 @@ export default function PublicScoreboard() {
           </div>
         )}
 
-        {/* Footer */}
-        <div className="mt-12 text-center text-slate-600 text-sm">
-          <p>BCFL Wildcard Playoffs 2025</p>
-        </div>
       </main>
 
       {/* Weekly Writeup Popup - only shows for current week, not historical */}
