@@ -76,7 +76,7 @@ interface BenchPlayer {
 export default function PublicScoreboard() {
   const navigate = useNavigate();
   const { teamId } = useParams<{ teamId?: string }>();
-  const [week, setWeek] = useState(1);
+  const [week, setWeek] = useState(2); // Default to current round (Divisional)
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [allGamesFinal, setAllGamesFinal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<{ team: TeamDetail; starters: Starter[]; bench?: BenchPlayer[] } | null>(null);
@@ -334,6 +334,7 @@ export default function PublicScoreboard() {
                     conference={conference}
                     isPoolRound={isPoolRound}
                     allGamesFinal={allGamesFinal}
+                    week={week}
                     onTeamClick={handleTeamClick}
                   />
                 ))}
@@ -486,18 +487,37 @@ function FutureRoundCard({ roundName }: { roundName: string }) {
   );
 }
 
+// Draft order for Divisional round (week 2)
+const DIVISIONAL_DRAFT_ORDER: Record<string, string[]> = {
+  NFC: ["Sacks and the City", "Masters of the Universe", "Stacy's Mom", "CMFers"],
+  AFC: ["Bash Brothers", "Nemesis Enforcer", "Monday Morning QBs", "Pole Patrol"],
+};
+
 interface ConferenceCardProps {
   conference: Conference;
   isPoolRound: boolean;
   allGamesFinal: boolean;
+  week: number;
   onTeamClick: (teamId: string) => void;
 }
 
-function ConferenceCard({ conference, isPoolRound, allGamesFinal, onTeamClick }: ConferenceCardProps) {
-  // Sort teams by score
-  const sortedTeams = [...conference.teams].sort((a, b) => b.score - a.score);
+function ConferenceCard({ conference, isPoolRound, allGamesFinal, week, onTeamClick }: ConferenceCardProps) {
+  const hasScores = conference.teams.some(t => t.score > 0);
+  
+  // Sort teams: by score if scores exist, otherwise by draft order for divisional
+  const sortedTeams = [...conference.teams].sort((a, b) => {
+    if (hasScores) {
+      return b.score - a.score;
+    }
+    // Use draft order for divisional round when no scores yet
+    if (week === 2) {
+      const order = DIVISIONAL_DRAFT_ORDER[conference.name] || [];
+      return order.indexOf(a.name) - order.indexOf(b.name);
+    }
+    return 0;
+  });
+  
   const winner = sortedTeams[0];
-  const hasScores = sortedTeams.some(t => t.score > 0);
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
