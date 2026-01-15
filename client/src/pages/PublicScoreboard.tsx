@@ -717,23 +717,27 @@ function ConferenceCard({ conference, isPoolRound, allGamesFinal, week, onTeamCl
           {/* Matchup 1: #1 vs #4 */}
           <div 
             onClick={() => onMatchupClick(conference.name, 1)}
-            className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group"
+            className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group"
           >
-            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-2 text-center flex items-center justify-center gap-2">
-              <span>Semifinal 1</span>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400">• View Matchup</span>
+            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-3 text-center">
+              Semifinal 1
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs bg-amber-500 text-black">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              {/* Team 1 - Left aligned */}
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-amber-500 text-black shrink-0">
                   #1
                 </div>
-                <span className="font-semibold text-white">{sortedTeams[0]?.name}</span>
+                <span className="font-semibold text-white text-sm truncate">{sortedTeams[0]?.name}</span>
               </div>
-              <div className="text-xl font-black text-slate-500 px-4">vs</div>
-              <div className="flex items-center gap-3 flex-1 justify-end">
-                <span className="font-semibold text-white">{sortedTeams[1]?.name}</span>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs bg-slate-600 text-white">
+              
+              {/* VS - Centered */}
+              <div className="text-lg font-black text-slate-500 px-2">vs</div>
+              
+              {/* Team 4 - Right aligned */}
+              <div className="flex items-center gap-2 justify-end">
+                <span className="font-semibold text-white text-sm truncate text-right">{sortedTeams[1]?.name}</span>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-slate-600 text-white shrink-0">
                   #4
                 </div>
               </div>
@@ -743,23 +747,27 @@ function ConferenceCard({ conference, isPoolRound, allGamesFinal, week, onTeamCl
           {/* Matchup 2: #2 vs #3 */}
           <div 
             onClick={() => onMatchupClick(conference.name, 2)}
-            className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group"
+            className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group"
           >
-            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-2 text-center flex items-center justify-center gap-2">
-              <span>Semifinal 2</span>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400">• View Matchup</span>
+            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-3 text-center">
+              Semifinal 2
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs bg-slate-500 text-white">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              {/* Team 2 - Left aligned */}
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-slate-500 text-white shrink-0">
                   #2
                 </div>
-                <span className="font-semibold text-white">{sortedTeams[2]?.name}</span>
+                <span className="font-semibold text-white text-sm truncate">{sortedTeams[2]?.name}</span>
               </div>
-              <div className="text-xl font-black text-slate-500 px-4">vs</div>
-              <div className="flex items-center gap-3 flex-1 justify-end">
-                <span className="font-semibold text-white">{sortedTeams[3]?.name}</span>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs bg-orange-700 text-white">
+              
+              {/* VS - Centered */}
+              <div className="text-lg font-black text-slate-500 px-2">vs</div>
+              
+              {/* Team 3 - Right aligned */}
+              <div className="flex items-center gap-2 justify-end">
+                <span className="font-semibold text-white text-sm truncate text-right">{sortedTeams[3]?.name}</span>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-orange-700 text-white shrink-0">
                   #3
                 </div>
               </div>

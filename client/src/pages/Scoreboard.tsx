@@ -497,21 +497,20 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, allGamesFinal, we
             onClick={() => onMatchupClick(conference.name, 1)}
             className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group"
           >
-            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-3 text-center flex items-center justify-center gap-2">
-              <span>Semifinal 1</span>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400">• View Matchup</span>
+            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-3 text-center">
+              Semifinal 1
             </div>
-            <div className="flex items-center justify-between">
-              {/* Team 1 */}
-              <div className={`flex-1 p-3 rounded-lg ${sortedTeams[0]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-amber-500 text-black">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              {/* Team 1 - Left aligned */}
+              <div className={`p-2 rounded-lg ${sortedTeams[0]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-amber-500 text-black shrink-0">
                     #1
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className={`font-semibold ${sortedTeams[0]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[0]?.name}</span>
-                      {sortedTeams[0]?.id === userTeamId && <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <span className={`font-semibold text-sm ${sortedTeams[0]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[0]?.name}</span>
+                      {sortedTeams[0]?.id === userTeamId && <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
                     </div>
                     <div className="text-xs">
                       {sortedTeams[0]?.lineupSet ? (
@@ -524,16 +523,16 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, allGamesFinal, we
                 </div>
               </div>
               
-              {/* VS */}
-              <div className="px-4 text-xl font-black text-slate-500">vs</div>
+              {/* VS - Centered */}
+              <div className="text-lg font-black text-slate-500 px-2">vs</div>
               
-              {/* Team 4 */}
-              <div className={`flex-1 p-3 rounded-lg ${sortedTeams[1]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
-                <div className="flex items-center gap-3 justify-end">
-                  <div className="text-right">
-                    <div className="flex items-center gap-2 justify-end">
-                      {sortedTeams[1]?.id === userTeamId && <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
-                      <span className={`font-semibold ${sortedTeams[1]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[1]?.name}</span>
+              {/* Team 4 - Right aligned */}
+              <div className={`p-2 rounded-lg ${sortedTeams[1]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
+                <div className="flex items-center gap-2 justify-end">
+                  <div className="min-w-0 text-right">
+                    <div className="flex items-center gap-1 justify-end flex-wrap">
+                      {sortedTeams[1]?.id === userTeamId && <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
+                      <span className={`font-semibold text-sm ${sortedTeams[1]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[1]?.name}</span>
                     </div>
                     <div className="text-xs">
                       {sortedTeams[1]?.lineupSet ? (
@@ -543,7 +542,7 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, allGamesFinal, we
                       )}
                     </div>
                   </div>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-slate-600 text-white">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-slate-600 text-white shrink-0">
                     #4
                   </div>
                 </div>
@@ -556,21 +555,20 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, allGamesFinal, we
             onClick={() => onMatchupClick(conference.name, 2)}
             className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group"
           >
-            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-3 text-center flex items-center justify-center gap-2">
-              <span>Semifinal 2</span>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400">• View Matchup</span>
+            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-3 text-center">
+              Semifinal 2
             </div>
-            <div className="flex items-center justify-between">
-              {/* Team 2 */}
-              <div className={`flex-1 p-3 rounded-lg ${sortedTeams[2]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-slate-500 text-white">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              {/* Team 2 - Left aligned */}
+              <div className={`p-2 rounded-lg ${sortedTeams[2]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-slate-500 text-white shrink-0">
                     #2
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className={`font-semibold ${sortedTeams[2]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[2]?.name}</span>
-                      {sortedTeams[2]?.id === userTeamId && <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <span className={`font-semibold text-sm ${sortedTeams[2]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[2]?.name}</span>
+                      {sortedTeams[2]?.id === userTeamId && <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
                     </div>
                     <div className="text-xs">
                       {sortedTeams[2]?.lineupSet ? (
@@ -583,16 +581,16 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, allGamesFinal, we
                 </div>
               </div>
               
-              {/* VS */}
-              <div className="px-4 text-xl font-black text-slate-500">vs</div>
+              {/* VS - Centered */}
+              <div className="text-lg font-black text-slate-500 px-2">vs</div>
               
-              {/* Team 3 */}
-              <div className={`flex-1 p-3 rounded-lg ${sortedTeams[3]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
-                <div className="flex items-center gap-3 justify-end">
-                  <div className="text-right">
-                    <div className="flex items-center gap-2 justify-end">
-                      {sortedTeams[3]?.id === userTeamId && <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
-                      <span className={`font-semibold ${sortedTeams[3]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[3]?.name}</span>
+              {/* Team 3 - Right aligned */}
+              <div className={`p-2 rounded-lg ${sortedTeams[3]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
+                <div className="flex items-center gap-2 justify-end">
+                  <div className="min-w-0 text-right">
+                    <div className="flex items-center gap-1 justify-end flex-wrap">
+                      {sortedTeams[3]?.id === userTeamId && <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
+                      <span className={`font-semibold text-sm ${sortedTeams[3]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[3]?.name}</span>
                     </div>
                     <div className="text-xs">
                       {sortedTeams[3]?.lineupSet ? (
@@ -602,7 +600,7 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, allGamesFinal, we
                       )}
                     </div>
                   </div>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-orange-700 text-white">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-orange-700 text-white shrink-0">
                     #3
                   </div>
                 </div>
