@@ -246,13 +246,13 @@ function FutureRoundCard({ roundName }: { roundName: string }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-5">
             <div className="text-red-400 font-bold mb-3">AFC Championship</div>
-            <div className="text-slate-500 italic">Winner of Bash/WC</div>
+            <div className="text-slate-500 italic">Winner of Bash/Pole</div>
             <div className="text-slate-600 my-2">vs</div>
             <div className="text-slate-500 italic">Winner of Nemesis/MMQBs</div>
           </div>
           <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-5">
             <div className="text-blue-400 font-bold mb-3">NFC Championship</div>
-            <div className="text-slate-500 italic">Winner of Sacks/WC</div>
+            <div className="text-slate-500 italic">Winner of Sacks/CMFers</div>
             <div className="text-slate-600 my-2">vs</div>
             <div className="text-slate-500 italic">Winner of Masters/Stacy's</div>
           </div>
