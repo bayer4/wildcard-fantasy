@@ -1294,4 +1294,117 @@ router.delete('/writeups/:week', (req: AuthRequest, res: Response) => {
   }
 });
 
+// ========== DIVISIONAL ROUND SETUP ==========
+
+/**
+ * POST /api/admin/setup-divisional
+ * Cleans up Wildcard teams and sets up for Divisional round
+ * - Keeps only specified winner teams
+ * - Clears their rosters
+ * - Adds new teams for the round
+ */
+router.post('/setup-divisional', (req: AuthRequest, res: Response) => {
+  try {
+    const { keepTeams, newTeams } = req.body;
+    
+    // keepTeams: array of team names to keep (e.g., ["CMFers", "Pole Patrol"])
+    // newTeams: { AFC: ["Team1", "Team2"], NFC: ["Team3", "Team4"] }
+    
+    if (!keepTeams || !Array.isArray(keepTeams)) {
+      return res.status(400).json({ error: 'keepTeams array required' });
+    }
+    if (!newTeams || !newTeams.AFC || !newTeams.NFC) {
+      return res.status(400).json({ error: 'newTeams object with AFC and NFC arrays required' });
+    }
+
+    const results: string[] = [];
+
+    // Get teams to keep
+    const keepTeamIds = db.prepare(`
+      SELECT id FROM teams WHERE name IN (${keepTeams.map(() => '?').join(',')})
+    `).all(...keepTeams) as { id: string }[];
+    
+    const keepIds = keepTeamIds.map(t => t.id);
+    results.push(`Keeping ${keepIds.length} teams: ${keepTeams.join(', ')}`);
+
+    // Get teams to delete
+    const teamsToDelete = db.prepare(`
+      SELECT id, name FROM teams WHERE id NOT IN (${keepIds.map(() => '?').join(',') || "''"})
+    `).all(...keepIds) as { id: string; name: string }[];
+
+    // Delete in order: player_scores -> lineup_entries -> roster_players -> users -> teams
+    for (const team of teamsToDelete) {
+      // Get roster player IDs for this team
+      const rosterPlayerIds = db.prepare(
+        'SELECT id FROM roster_players WHERE team_id = ?'
+      ).all(team.id) as { id: string }[];
+      
+      if (rosterPlayerIds.length > 0) {
+        const rpIds = rosterPlayerIds.map(r => r.id);
+        db.prepare(`DELETE FROM player_scores WHERE roster_player_id IN (${rpIds.map(() => '?').join(',')})`).run(...rpIds);
+        db.prepare(`DELETE FROM lineup_entries WHERE roster_player_id IN (${rpIds.map(() => '?').join(',')})`).run(...rpIds);
+        db.prepare('DELETE FROM roster_players WHERE team_id = ?').run(team.id);
+      }
+      
+      // Delete team scores
+      db.prepare('DELETE FROM team_scores WHERE team_id = ?').run(team.id);
+      
+      // Delete users associated with this team
+      db.prepare('DELETE FROM users WHERE team_id = ?').run(team.id);
+      
+      // Delete the team
+      db.prepare('DELETE FROM teams WHERE id = ?').run(team.id);
+      
+      results.push(`Deleted team: ${team.name}`);
+    }
+
+    // Clear rosters for kept teams (but keep the team and users)
+    for (const teamId of keepIds) {
+      const rosterPlayerIds = db.prepare(
+        'SELECT id FROM roster_players WHERE team_id = ?'
+      ).all(teamId) as { id: string }[];
+      
+      if (rosterPlayerIds.length > 0) {
+        const rpIds = rosterPlayerIds.map(r => r.id);
+        db.prepare(`DELETE FROM player_scores WHERE roster_player_id IN (${rpIds.map(() => '?').join(',')})`).run(...rpIds);
+        db.prepare(`DELETE FROM lineup_entries WHERE roster_player_id IN (${rpIds.map(() => '?').join(',')})`).run(...rpIds);
+        db.prepare('DELETE FROM roster_players WHERE team_id = ?').run(teamId);
+      }
+      
+      // Delete team scores for the new week
+      db.prepare('DELETE FROM team_scores WHERE team_id = ?').run(teamId);
+      
+      const teamName = db.prepare('SELECT name FROM teams WHERE id = ?').get(teamId) as { name: string };
+      results.push(`Cleared roster for: ${teamName.name}`);
+    }
+
+    // Get conference IDs
+    const afcConf = db.prepare("SELECT id FROM conferences WHERE name = 'AFC'").get() as { id: string };
+    const nfcConf = db.prepare("SELECT id FROM conferences WHERE name = 'NFC'").get() as { id: string };
+
+    // Add new AFC teams
+    for (const teamName of newTeams.AFC) {
+      const teamId = uuidv4();
+      db.prepare('INSERT INTO teams (id, name, conference_id) VALUES (?, ?, ?)').run(teamId, teamName, afcConf.id);
+      results.push(`Added AFC team: ${teamName}`);
+    }
+
+    // Add new NFC teams
+    for (const teamName of newTeams.NFC) {
+      const teamId = uuidv4();
+      db.prepare('INSERT INTO teams (id, name, conference_id) VALUES (?, ?, ?)').run(teamId, teamName, nfcConf.id);
+      results.push(`Added NFC team: ${teamName}`);
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Divisional round setup complete',
+      results 
+    });
+  } catch (error: any) {
+    console.error('Setup divisional error:', error);
+    res.status(500).json({ error: 'Failed to setup divisional round', details: error.message });
+  }
+});
+
 export default router;
