@@ -455,95 +455,66 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, allGamesFinal, we
   });
   
   const winner = sortedTeams[0];
+  const isNFC = conference.name === 'NFC';
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
-      {/* Conference Header */}
-      <div className={`px-6 py-5 border-b border-slate-700/50 ${
-        conference.name === 'NFC' 
-          ? 'bg-gradient-to-r from-blue-600/20 to-blue-900/20' 
-          : 'bg-gradient-to-r from-red-600/20 to-red-900/20'
+    <div className="bg-slate-900/80 backdrop-blur rounded-2xl border border-slate-700/30 overflow-hidden">
+      {/* Conference Header - Clean & Centered */}
+      <div className={`px-6 py-6 text-center border-b border-slate-700/30 ${
+        isNFC ? 'bg-blue-500/5' : 'bg-red-500/5'
       }`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${
-              conference.name === 'NFC'
-                ? 'bg-blue-500/20 text-blue-400'
-                : 'bg-red-500/20 text-red-400'
-            }`}>
-              {conference.name}
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">{conference.name} {isPoolRound ? 'Pool' : 'Bracket'}</h2>
-              <p className="text-slate-500 text-sm">{sortedTeams.length} teams competing</p>
-            </div>
-          </div>
-          {hasScores && winner && (
-            <div className="text-right">
-              <div className="text-xs text-slate-500 uppercase tracking-wide">
-                {allGamesFinal ? '🏆 Winner' : 'Leader'}
-              </div>
-              <div className="text-amber-400 font-bold">{winner.name}</div>
-            </div>
-          )}
+        <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl font-black text-xl mb-3 ${
+          isNFC ? 'bg-blue-500/20 text-blue-400' : 'bg-red-500/20 text-red-400'
+        }`}>
+          {conference.name}
         </div>
+        <h2 className="text-xl font-bold text-white">{conference.name} Bracket</h2>
+        {hasScores && winner ? (
+          <div className="mt-1">
+            <span className="text-slate-500 text-sm">
+              {allGamesFinal ? '🏆 Winner: ' : 'Leader: '}
+            </span>
+            <span className="text-amber-400 font-semibold text-sm">{winner.name}</span>
+          </div>
+        ) : (
+          <p className="text-slate-500 text-sm mt-1">4 teams competing</p>
+        )}
       </div>
 
       {/* Teams List - Show as matchups for Divisional (week 2) */}
       {week === 2 && !hasScores ? (
-        <div className="p-4 space-y-4">
+        <div className="p-5 space-y-3">
           {/* Matchup 1: #1 vs #4 */}
           <div 
             onClick={() => onMatchupClick(conference.name, 1)}
-            className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group"
+            className={`rounded-xl p-4 cursor-pointer transition-all border ${
+              isNFC 
+                ? 'bg-blue-500/5 border-blue-500/20 hover:border-blue-400/50 hover:bg-blue-500/10' 
+                : 'bg-red-500/5 border-red-500/20 hover:border-red-400/50 hover:bg-red-500/10'
+            }`}
           >
-            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-3 text-center">
+            <div className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-3 text-center">
               Semifinal 1
             </div>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-              {/* Team 1 - Left aligned */}
-              <div className={`p-2 rounded-lg ${sortedTeams[0]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-amber-500 text-black shrink-0">
-                    #1
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <span className={`font-semibold text-sm ${sortedTeams[0]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[0]?.name}</span>
-                      {sortedTeams[0]?.id === userTeamId && <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
-                    </div>
-                    <div className="text-xs">
-                      {sortedTeams[0]?.lineupSet ? (
-                        <span className="text-green-400">✓ Lineup Set</span>
-                      ) : (
-                        <span className="text-yellow-500">⚠ Incomplete</span>
-                      )}
-                    </div>
+            <div className="flex items-center justify-center gap-4">
+              <div className={`flex items-center gap-2 flex-1 justify-end ${sortedTeams[0]?.id === userTeamId ? 'text-emerald-400' : ''}`}>
+                <div className="text-right">
+                  <span className="font-medium text-sm">{sortedTeams[0]?.name}</span>
+                  {sortedTeams[0]?.id === userTeamId && <span className="ml-1 text-xs text-emerald-400">(You)</span>}
+                  <div className="text-[10px] text-slate-500">
+                    {sortedTeams[0]?.lineupSet ? '✓ Set' : '⚠ Incomplete'}
                   </div>
                 </div>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">#1</span>
               </div>
-              
-              {/* VS - Centered */}
-              <div className="text-lg font-black text-slate-500 px-2">vs</div>
-              
-              {/* Team 4 - Right aligned */}
-              <div className={`p-2 rounded-lg ${sortedTeams[1]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
-                <div className="flex items-center gap-2 justify-end">
-                  <div className="min-w-0 text-right">
-                    <div className="flex items-center gap-1 justify-end flex-wrap">
-                      {sortedTeams[1]?.id === userTeamId && <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
-                      <span className={`font-semibold text-sm ${sortedTeams[1]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[1]?.name}</span>
-                    </div>
-                    <div className="text-xs">
-                      {sortedTeams[1]?.lineupSet ? (
-                        <span className="text-green-400">✓ Lineup Set</span>
-                      ) : (
-                        <span className="text-yellow-500">⚠ Incomplete</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-slate-600 text-white shrink-0">
-                    #4
+              <div className="text-slate-600 font-medium text-xs">vs</div>
+              <div className={`flex items-center gap-2 flex-1 ${sortedTeams[1]?.id === userTeamId ? 'text-emerald-400' : ''}`}>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-600/50 text-slate-300">#4</span>
+                <div>
+                  <span className="font-medium text-sm">{sortedTeams[1]?.name}</span>
+                  {sortedTeams[1]?.id === userTeamId && <span className="ml-1 text-xs text-emerald-400">(You)</span>}
+                  <div className="text-[10px] text-slate-500">
+                    {sortedTeams[1]?.lineupSet ? '✓ Set' : '⚠ Incomplete'}
                   </div>
                 </div>
               </div>
@@ -553,55 +524,34 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, allGamesFinal, we
           {/* Matchup 2: #2 vs #3 */}
           <div 
             onClick={() => onMatchupClick(conference.name, 2)}
-            className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group"
+            className={`rounded-xl p-4 cursor-pointer transition-all border ${
+              isNFC 
+                ? 'bg-blue-500/5 border-blue-500/20 hover:border-blue-400/50 hover:bg-blue-500/10' 
+                : 'bg-red-500/5 border-red-500/20 hover:border-red-400/50 hover:bg-red-500/10'
+            }`}
           >
-            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-3 text-center">
+            <div className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-3 text-center">
               Semifinal 2
             </div>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-              {/* Team 2 - Left aligned */}
-              <div className={`p-2 rounded-lg ${sortedTeams[2]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-slate-500 text-white shrink-0">
-                    #2
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <span className={`font-semibold text-sm ${sortedTeams[2]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[2]?.name}</span>
-                      {sortedTeams[2]?.id === userTeamId && <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
-                    </div>
-                    <div className="text-xs">
-                      {sortedTeams[2]?.lineupSet ? (
-                        <span className="text-green-400">✓ Lineup Set</span>
-                      ) : (
-                        <span className="text-yellow-500">⚠ Incomplete</span>
-                      )}
-                    </div>
+            <div className="flex items-center justify-center gap-4">
+              <div className={`flex items-center gap-2 flex-1 justify-end ${sortedTeams[2]?.id === userTeamId ? 'text-emerald-400' : ''}`}>
+                <div className="text-right">
+                  <span className="font-medium text-sm">{sortedTeams[2]?.name}</span>
+                  {sortedTeams[2]?.id === userTeamId && <span className="ml-1 text-xs text-emerald-400">(You)</span>}
+                  <div className="text-[10px] text-slate-500">
+                    {sortedTeams[2]?.lineupSet ? '✓ Set' : '⚠ Incomplete'}
                   </div>
                 </div>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-500/50 text-slate-200">#2</span>
               </div>
-              
-              {/* VS - Centered */}
-              <div className="text-lg font-black text-slate-500 px-2">vs</div>
-              
-              {/* Team 3 - Right aligned */}
-              <div className={`p-2 rounded-lg ${sortedTeams[3]?.id === userTeamId ? 'bg-emerald-500/10' : ''}`}>
-                <div className="flex items-center gap-2 justify-end">
-                  <div className="min-w-0 text-right">
-                    <div className="flex items-center gap-1 justify-end flex-wrap">
-                      {sortedTeams[3]?.id === userTeamId && <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">You</span>}
-                      <span className={`font-semibold text-sm ${sortedTeams[3]?.id === userTeamId ? 'text-emerald-400' : 'text-white'}`}>{sortedTeams[3]?.name}</span>
-                    </div>
-                    <div className="text-xs">
-                      {sortedTeams[3]?.lineupSet ? (
-                        <span className="text-green-400">✓ Lineup Set</span>
-                      ) : (
-                        <span className="text-yellow-500">⚠ Incomplete</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs bg-orange-700 text-white shrink-0">
-                    #3
+              <div className="text-slate-600 font-medium text-xs">vs</div>
+              <div className={`flex items-center gap-2 flex-1 ${sortedTeams[3]?.id === userTeamId ? 'text-emerald-400' : ''}`}>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-600/50 text-orange-300">#3</span>
+                <div>
+                  <span className="font-medium text-sm">{sortedTeams[3]?.name}</span>
+                  {sortedTeams[3]?.id === userTeamId && <span className="ml-1 text-xs text-emerald-400">(You)</span>}
+                  <div className="text-[10px] text-slate-500">
+                    {sortedTeams[3]?.lineupSet ? '✓ Set' : '⚠ Incomplete'}
                   </div>
                 </div>
               </div>

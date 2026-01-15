@@ -144,78 +144,74 @@ export default function HeadToHead() {
   const totalPoints = data.team1.totalPoints + data.team2.totalPoints;
   const team1Percent = totalPoints > 0 ? (data.team1.totalPoints / totalPoints) * 100 : 50;
 
+  const isNFC = data.conference === 'NFC';
+
   return (
     <div className="min-h-screen bg-slate-950">
-      {/* Header */}
-      <div className={`${data.conference === 'AFC' ? 'bg-gradient-to-r from-red-900/50 to-slate-900' : 'bg-gradient-to-r from-blue-900/50 to-slate-900'} border-b border-slate-800`}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      {/* Clean Header */}
+      <div className="border-b border-slate-800/50">
+        <div className="max-w-5xl mx-auto px-4 py-4">
           <button
             onClick={() => navigate('/live')}
-            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-white transition-colors text-sm"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Scoreboard
+            Back
           </button>
-          
-          <div className="text-center">
-            <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold mb-2 ${
-              data.conference === 'AFC' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'
-            }`}>
-              {data.conference} Semifinal {data.matchupNum}
-            </div>
-            <h1 className="text-2xl md:text-3xl font-black text-white">
-              {data.team1.name} vs {data.team2.name}
-            </h1>
-          </div>
         </div>
       </div>
 
-      {/* Score Header */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
-          {/* Big Score Display */}
-          <div className="grid grid-cols-3 items-center py-8 px-4">
+      {/* Matchup Title */}
+      <div className="max-w-5xl mx-auto px-4 pt-8 pb-6 text-center">
+        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4 ${
+          isNFC ? 'bg-blue-500/10 text-blue-400' : 'bg-red-500/10 text-red-400'
+        }`}>
+          <span>{data.conference}</span>
+          <span className="text-slate-600">•</span>
+          <span>Semifinal {data.matchupNum}</span>
+        </div>
+      </div>
+
+      {/* Score Display */}
+      <div className="max-w-5xl mx-auto px-4 pb-8">
+        <div className={`rounded-2xl border overflow-hidden ${
+          isNFC ? 'bg-blue-500/5 border-blue-500/20' : 'bg-red-500/5 border-red-500/20'
+        }`}>
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center py-10 px-6">
             {/* Team 1 */}
             <div className="text-center">
-              <div className={`text-lg font-bold mb-2 ${team1Leading ? 'text-amber-400' : 'text-white'}`}>
+              <div className={`text-base font-medium mb-3 ${team1Leading ? 'text-amber-400' : 'text-slate-300'}`}>
                 {data.team1.name}
               </div>
-              <div className={`text-5xl md:text-6xl font-black ${team1Leading ? 'text-amber-400' : 'text-white'}`}>
-                {Math.round(data.team1.totalPoints) || '—'}
+              <div className={`text-6xl md:text-7xl font-black tracking-tight ${team1Leading ? 'text-amber-400' : 'text-white'}`}>
+                {data.team1.totalPoints > 0 ? Math.round(data.team1.totalPoints) : '—'}
               </div>
-              {data.team1.totalPoints > 0 && (
-                <div className="text-slate-500 text-sm mt-1">points</div>
-              )}
             </div>
 
-            {/* VS */}
-            <div className="text-center">
-              <div className="text-3xl font-black text-slate-600">VS</div>
-              {totalPoints > 0 && (
-                <div className="text-xs text-slate-500 mt-2">LIVE</div>
-              )}
+            {/* VS Divider */}
+            <div className="flex flex-col items-center justify-center px-6">
+              <div className="w-px h-12 bg-slate-700/50 mb-3"></div>
+              <div className="text-slate-600 text-xs font-medium tracking-widest">VS</div>
+              <div className="w-px h-12 bg-slate-700/50 mt-3"></div>
             </div>
 
             {/* Team 2 */}
             <div className="text-center">
-              <div className={`text-lg font-bold mb-2 ${team2Leading ? 'text-amber-400' : 'text-white'}`}>
+              <div className={`text-base font-medium mb-3 ${team2Leading ? 'text-amber-400' : 'text-slate-300'}`}>
                 {data.team2.name}
               </div>
-              <div className={`text-5xl md:text-6xl font-black ${team2Leading ? 'text-amber-400' : 'text-white'}`}>
-                {Math.round(data.team2.totalPoints) || '—'}
+              <div className={`text-6xl md:text-7xl font-black tracking-tight ${team2Leading ? 'text-amber-400' : 'text-white'}`}>
+                {data.team2.totalPoints > 0 ? Math.round(data.team2.totalPoints) : '—'}
               </div>
-              {data.team2.totalPoints > 0 && (
-                <div className="text-slate-500 text-sm mt-1">points</div>
-              )}
             </div>
           </div>
 
           {/* Progress Bar */}
           {totalPoints > 0 && (
-            <div className="px-6 pb-6">
-              <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
+            <div className="px-8 pb-8">
+              <div className="h-2 bg-slate-800/50 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-500"
                   style={{ width: `${team1Percent}%` }}
@@ -231,16 +227,16 @@ export default function HeadToHead() {
       </div>
 
       {/* Side-by-Side Lineups */}
-      <div className="max-w-7xl mx-auto px-4 pb-8">
+      <div className="max-w-5xl mx-auto px-4 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Team 1 Lineup */}
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
-            <div className={`px-4 py-3 border-b border-slate-800 ${team1Leading ? 'bg-amber-500/10' : ''}`}>
-              <h2 className={`font-bold ${team1Leading ? 'text-amber-400' : 'text-white'}`}>
+          <div className="bg-slate-900/50 rounded-xl border border-slate-800/50 overflow-hidden">
+            <div className={`px-4 py-3 border-b border-slate-800/50 ${team1Leading ? 'bg-amber-500/5' : ''}`}>
+              <h2 className={`font-semibold text-sm ${team1Leading ? 'text-amber-400' : 'text-white'}`}>
                 {data.team1.name} {team1Leading && '👑'}
               </h2>
             </div>
-            <div className="divide-y divide-slate-800/50">
+            <div className="divide-y divide-slate-800/30">
               {SLOT_ORDER.map((slot) => {
                 const player = team1Starters.find(p => p.slot === slot);
                 const opponent = team2Starters.find(p => p.slot === slot);
@@ -248,22 +244,22 @@ export default function HeadToHead() {
                 const losing = player && opponent && player.points < opponent.points;
                 
                 return (
-                  <div key={slot} className={`px-4 py-3 flex items-center justify-between ${winning ? 'bg-green-500/5' : losing ? 'bg-red-500/5' : ''}`}>
+                  <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${winning ? 'bg-green-500/5' : losing ? 'bg-red-500/5' : ''}`}>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 text-xs font-bold text-slate-500 uppercase">
+                      <div className="w-10 text-[10px] font-semibold text-slate-500 uppercase">
                         {SLOT_LABELS[slot]}
                       </div>
                       {player ? (
                         <div>
                           <div className="font-medium text-white text-sm">{player.displayName}</div>
-                          <div className="text-xs text-slate-500">{player.nflTeam}</div>
+                          <div className="text-[10px] text-slate-500">{player.nflTeam}</div>
                         </div>
                       ) : (
-                        <div className="text-slate-600 text-sm">Empty</div>
+                        <div className="text-slate-600 text-xs">Empty</div>
                       )}
                     </div>
-                    <div className={`text-xl font-black ${
-                      winning ? 'text-green-400' : losing ? 'text-red-400' : player?.points ? 'text-white' : 'text-slate-600'
+                    <div className={`text-lg font-bold ${
+                      winning ? 'text-green-400' : losing ? 'text-red-400' : player?.points ? 'text-white' : 'text-slate-700'
                     }`}>
                       {player?.points ? Math.round(player.points) : '—'}
                     </div>
@@ -274,13 +270,13 @@ export default function HeadToHead() {
           </div>
 
           {/* Team 2 Lineup */}
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
-            <div className={`px-4 py-3 border-b border-slate-800 ${team2Leading ? 'bg-amber-500/10' : ''}`}>
-              <h2 className={`font-bold ${team2Leading ? 'text-amber-400' : 'text-white'}`}>
+          <div className="bg-slate-900/50 rounded-xl border border-slate-800/50 overflow-hidden">
+            <div className={`px-4 py-3 border-b border-slate-800/50 ${team2Leading ? 'bg-amber-500/5' : ''}`}>
+              <h2 className={`font-semibold text-sm ${team2Leading ? 'text-amber-400' : 'text-white'}`}>
                 {data.team2.name} {team2Leading && '👑'}
               </h2>
             </div>
-            <div className="divide-y divide-slate-800/50">
+            <div className="divide-y divide-slate-800/30">
               {SLOT_ORDER.map((slot) => {
                 const player = team2Starters.find(p => p.slot === slot);
                 const opponent = team1Starters.find(p => p.slot === slot);
@@ -288,22 +284,22 @@ export default function HeadToHead() {
                 const losing = player && opponent && player.points < opponent.points;
                 
                 return (
-                  <div key={slot} className={`px-4 py-3 flex items-center justify-between ${winning ? 'bg-green-500/5' : losing ? 'bg-red-500/5' : ''}`}>
+                  <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${winning ? 'bg-green-500/5' : losing ? 'bg-red-500/5' : ''}`}>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 text-xs font-bold text-slate-500 uppercase">
+                      <div className="w-10 text-[10px] font-semibold text-slate-500 uppercase">
                         {SLOT_LABELS[slot]}
                       </div>
                       {player ? (
                         <div>
                           <div className="font-medium text-white text-sm">{player.displayName}</div>
-                          <div className="text-xs text-slate-500">{player.nflTeam}</div>
+                          <div className="text-[10px] text-slate-500">{player.nflTeam}</div>
                         </div>
                       ) : (
-                        <div className="text-slate-600 text-sm">Empty</div>
+                        <div className="text-slate-600 text-xs">Empty</div>
                       )}
                     </div>
-                    <div className={`text-xl font-black ${
-                      winning ? 'text-green-400' : losing ? 'text-red-400' : player?.points ? 'text-white' : 'text-slate-600'
+                    <div className={`text-lg font-bold ${
+                      winning ? 'text-green-400' : losing ? 'text-red-400' : player?.points ? 'text-white' : 'text-slate-700'
                     }`}>
                       {player?.points ? Math.round(player.points) : '—'}
                     </div>
