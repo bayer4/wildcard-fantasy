@@ -709,57 +709,129 @@ function ConferenceCard({ conference, isPoolRound, allGamesFinal, week, onTeamCl
         </div>
       </div>
 
-      {/* Teams List */}
-      <div className="divide-y divide-slate-800/50">
-        {sortedTeams.map((team, index) => {
-          const rank = index + 1;
-          const rankColors: Record<number, string> = {
-            1: 'from-amber-500 to-yellow-500 text-black',
-            2: 'from-slate-400 to-slate-300 text-black',
-            3: 'from-orange-700 to-amber-700 text-white',
-            4: 'from-slate-700 to-slate-600 text-slate-300',
-          };
-
-          return (
-            <div
-              key={team.id}
-              onClick={() => onTeamClick(team.id)}
-              className="px-6 py-4 flex items-center justify-between cursor-pointer transition-all group hover:bg-slate-800/50"
-            >
-              <div className="flex items-center gap-4">
-                {/* Rank Badge */}
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-gradient-to-br ${rankColors[rank] || rankColors[4]}`}>
-                  {rank}
-                </div>
-                
-                {/* Team Name */}
-                <span className="font-semibold text-white">{team.name}</span>
-              </div>
-
-              {/* Score & Minutes */}
-              <div className="flex items-center gap-4">
-                {/* Minutes Left */}
-                {team.minutesLeft !== undefined && team.minutesLeft > 0 && (
-                  <div className="text-xs text-slate-500 flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {team.minutesLeft}m
-                  </div>
-                )}
-                <div className={`text-2xl font-black ${
-                  team.score > 0 ? 'text-white' : 'text-slate-600'
-                }`}>
-                  {team.score > 0 ? team.score : '—'}
-                </div>
-                <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
+      {/* Teams List - Show as matchups for Divisional (week 2) */}
+      {week === 2 && !hasScores ? (
+        <div className="p-4 space-y-4">
+          {/* Matchup 1: #1 vs #4 */}
+          <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
+            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-2 text-center">
+              Semifinal 1
             </div>
-          );
-        })}
-      </div>
+            {sortedTeams.slice(0, 2).map((team, index) => (
+              <div
+                key={team.id}
+                onClick={() => onTeamClick(team.id)}
+                className={`px-4 py-3 flex items-center justify-between cursor-pointer transition-all hover:bg-slate-700/50 rounded-lg ${
+                  index === 0 ? '' : 'mt-1'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
+                    index === 0 ? 'bg-amber-500 text-black' : 'bg-slate-600 text-white'
+                  }`}>
+                    #{index === 0 ? '1' : '4'}
+                  </div>
+                  <span className="font-semibold text-white">{team.name}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  {team.minutesLeft !== undefined && team.minutesLeft > 0 && (
+                    <span className="text-xs text-slate-500">{team.minutesLeft}m</span>
+                  )}
+                  <span className="text-xl font-black text-slate-600">—</span>
+                  <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Matchup 2: #2 vs #3 */}
+          <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
+            <div className="text-xs text-amber-400/70 font-semibold uppercase tracking-wider mb-2 text-center">
+              Semifinal 2
+            </div>
+            {sortedTeams.slice(2, 4).map((team, index) => (
+              <div
+                key={team.id}
+                onClick={() => onTeamClick(team.id)}
+                className={`px-4 py-3 flex items-center justify-between cursor-pointer transition-all hover:bg-slate-700/50 rounded-lg ${
+                  index === 0 ? '' : 'mt-1'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
+                    index === 0 ? 'bg-slate-500 text-white' : 'bg-orange-700 text-white'
+                  }`}>
+                    #{index === 0 ? '2' : '3'}
+                  </div>
+                  <span className="font-semibold text-white">{team.name}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  {team.minutesLeft !== undefined && team.minutesLeft > 0 && (
+                    <span className="text-xs text-slate-500">{team.minutesLeft}m</span>
+                  )}
+                  <span className="text-xl font-black text-slate-600">—</span>
+                  <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="divide-y divide-slate-800/50">
+          {sortedTeams.map((team, index) => {
+            const rank = index + 1;
+            const rankColors: Record<number, string> = {
+              1: 'from-amber-500 to-yellow-500 text-black',
+              2: 'from-slate-400 to-slate-300 text-black',
+              3: 'from-orange-700 to-amber-700 text-white',
+              4: 'from-slate-700 to-slate-600 text-slate-300',
+            };
+
+            return (
+              <div
+                key={team.id}
+                onClick={() => onTeamClick(team.id)}
+                className="px-6 py-4 flex items-center justify-between cursor-pointer transition-all group hover:bg-slate-800/50"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Rank Badge */}
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-gradient-to-br ${rankColors[rank] || rankColors[4]}`}>
+                    {rank}
+                  </div>
+                  
+                  {/* Team Name */}
+                  <span className="font-semibold text-white">{team.name}</span>
+                </div>
+
+                {/* Score & Minutes */}
+                <div className="flex items-center gap-4">
+                  {/* Minutes Left */}
+                  {team.minutesLeft !== undefined && team.minutesLeft > 0 && (
+                    <div className="text-xs text-slate-500 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {team.minutesLeft}m
+                    </div>
+                  )}
+                  <div className={`text-2xl font-black ${
+                    team.score > 0 ? 'text-white' : 'text-slate-600'
+                  }`}>
+                    {team.score > 0 ? team.score : '—'}
+                  </div>
+                  <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Pool Footer */}
       {isPoolRound && (
