@@ -307,6 +307,9 @@ function generatePublicStatLine(position: string, playerId: string, nflTeam: str
       if ((stats.rush_tds || 0) > 0) rushLine += ` ${stats.rush_tds}TD`;
       parts.push(rushLine);
     }
+    if ((stats.fumbles_lost || 0) > 0) {
+      parts.push(`${stats.fumbles_lost}FUM`);
+    }
     return parts.join(' • ');
   }
 
@@ -322,6 +325,9 @@ function generatePublicStatLine(position: string, playerId: string, nflTeam: str
       if ((stats.rec_tds || 0) > 0) recLine += ` ${stats.rec_tds}TD`;
       parts.push(recLine);
     }
+    if ((stats.fumbles_lost || 0) > 0) {
+      parts.push(`${stats.fumbles_lost}FUM`);
+    }
     return parts.join(' • ');
   }
 
@@ -334,6 +340,9 @@ function generatePublicStatLine(position: string, playerId: string, nflTeam: str
     }
     if ((stats.rush_attempts || 0) > 0 || (stats.rush_yards || 0) !== 0) {
       parts.push(`Rush ${stats.rush_attempts || 0}-${stats.rush_yards || 0}`);
+    }
+    if ((stats.fumbles_lost || 0) > 0) {
+      parts.push(`${stats.fumbles_lost}FUM`);
     }
     return parts.join(' • ');
   }
