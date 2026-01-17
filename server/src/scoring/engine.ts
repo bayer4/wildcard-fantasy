@@ -649,31 +649,38 @@ export function computeTeamScores(week: number): TeamScoreResult[] | { error: st
   }
 
   // Award "least yards allowed" bonus to the defense with fewest yards
+  // Only award this bonus when ALL games for the week are final
   const leastYardsBonus = rules.bonuses?.defenseSpecialTeams?.leastTotalYardageAllowed;
   if (leastYardsBonus && startedDefenses.length > 0) {
-    // Find the minimum yards allowed
-    const minYards = Math.min(...startedDefenses.map(d => d.yardsAllowed));
+    // Check if all games for this week are final
+    const allGames = db.prepare('SELECT status FROM games WHERE week = ?').all(week) as { status: string }[];
+    const allGamesFinal = allGames.length > 0 && allGames.every(g => g.status === 'final');
     
-    // Find all defenses with that minimum (could be ties)
-    const winners = startedDefenses.filter(d => d.yardsAllowed === minYards);
-    
-    // Award bonus to winners
-    for (const winner of winners) {
-      const teamResult = results.find(r => r.teamId === winner.teamId);
-      if (teamResult) {
-        const defenseScore = teamResult.playerScores.find(
-          ps => ps.rosterPlayerId === winner.rosterPlayerId
-        );
-        if (defenseScore) {
-          defenseScore.points += leastYardsBonus;
-          defenseScore.breakdown.push({
-            category: 'Defense',
-            stat: 'Fewest Yards Allowed',
-            value: winner.yardsAllowed,
-            points: leastYardsBonus
-          });
-          teamResult.starterPoints += leastYardsBonus;
-          teamResult.totalPoints += leastYardsBonus;
+    if (allGamesFinal) {
+      // Find the minimum yards allowed
+      const minYards = Math.min(...startedDefenses.map(d => d.yardsAllowed));
+      
+      // Find all defenses with that minimum (could be ties)
+      const winners = startedDefenses.filter(d => d.yardsAllowed === minYards);
+      
+      // Award bonus to winners
+      for (const winner of winners) {
+        const teamResult = results.find(r => r.teamId === winner.teamId);
+        if (teamResult) {
+          const defenseScore = teamResult.playerScores.find(
+            ps => ps.rosterPlayerId === winner.rosterPlayerId
+          );
+          if (defenseScore) {
+            defenseScore.points += leastYardsBonus;
+            defenseScore.breakdown.push({
+              category: 'Defense',
+              stat: 'Fewest Yards Allowed',
+              value: winner.yardsAllowed,
+              points: leastYardsBonus
+            });
+            teamResult.starterPoints += leastYardsBonus;
+            teamResult.totalPoints += leastYardsBonus;
+          }
         }
       }
     }

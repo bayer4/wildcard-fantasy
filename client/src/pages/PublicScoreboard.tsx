@@ -658,22 +658,29 @@ interface ConferenceCardProps {
 
 function ConferenceCard({ conference, isPoolRound, week, onTeamClick, onMatchupClick }: ConferenceCardProps) {
   const hasScores = conference.teams.some(t => t.score > 0);
+  const isNFC = conference.name === 'NFC';
   
-  // Sort teams: by score if scores exist, otherwise by draft order for divisional
+  // For H2H weeks, use draft order for matchups
+  const draftOrder = DIVISIONAL_DRAFT_ORDER[conference.name] || [];
+  const teamsByDraft = draftOrder.map(name => 
+    conference.teams.find(t => t.name === name) || { id: '', name, score: 0 }
+  );
+  
+  // Sort by score for display ranking
   const sortedTeams = [...conference.teams].sort((a, b) => {
     if (hasScores) {
       return b.score - a.score;
     }
-    // Use draft order for divisional round when no scores yet
-    if (week === 2) {
-      const order = DIVISIONAL_DRAFT_ORDER[conference.name] || [];
-      return order.indexOf(a.name) - order.indexOf(b.name);
-    }
-    return 0;
+    return draftOrder.indexOf(a.name) - draftOrder.indexOf(b.name);
   });
   
   const winner = sortedTeams[0];
-  const isNFC = conference.name === 'NFC';
+  
+  // Get matchup teams (by seed): Matchup 1 = #1 vs #4, Matchup 2 = #2 vs #3
+  const matchup1Team1 = teamsByDraft[0]; // #1 seed
+  const matchup1Team2 = teamsByDraft[3]; // #4 seed
+  const matchup2Team1 = teamsByDraft[1]; // #2 seed
+  const matchup2Team2 = teamsByDraft[2]; // #3 seed
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
@@ -696,63 +703,99 @@ function ConferenceCard({ conference, isPoolRound, week, onTeamClick, onMatchupC
         )}
       </div>
 
-      {/* Teams List - Bracket format with Wildcard styling */}
-      {week === 2 && !hasScores ? (
+      {/* Teams List - Bracket format for H2H rounds */}
+      {week >= 2 ? (
         <div className="p-4 space-y-3">
-          {/* Semifinal 1: #1 vs #4 */}
+          {/* Matchup 1: #1 vs #4 */}
           <div 
             onClick={() => onMatchupClick(conference.name, 1)}
             className="bg-slate-800/30 rounded-xl p-4 cursor-pointer hover:bg-slate-800/50 transition-all group"
           >
-            <div className="text-xs text-amber-400/80 font-semibold uppercase tracking-wider mb-3 text-center">
-              Semifinal 1
-            </div>
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
               {/* Team 1 */}
-              <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
-                <span className="font-semibold text-white text-sm truncate">{sortedTeams[0]?.name}</span>
+              <div className="flex-1 flex items-center gap-2 min-w-0">
                 <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-amber-500 to-yellow-500 text-black">
                   1
                 </div>
+                <span className="font-semibold text-white text-sm truncate">{matchup1Team1?.name}</span>
               </div>
-              {/* VS */}
-              <span className="text-slate-600 font-medium text-xs px-3 flex-shrink-0">vs</span>
+              {/* Score */}
+              <div className="flex items-center gap-2 px-3">
+                <span className={`font-bold text-lg min-w-[2rem] text-right ${
+                  hasScores && matchup1Team1?.score > matchup1Team2?.score ? 'text-amber-400' : 'text-white'
+                }`}>
+                  {hasScores ? matchup1Team1?.score : '—'}
+                </span>
+                <span className="text-slate-600 text-xs">-</span>
+                <span className={`font-bold text-lg min-w-[2rem] text-left ${
+                  hasScores && matchup1Team2?.score > matchup1Team1?.score ? 'text-amber-400' : 'text-white'
+                }`}>
+                  {hasScores ? matchup1Team2?.score : '—'}
+                </span>
+              </div>
               {/* Team 2 */}
-              <div className="flex-1 flex items-center gap-2 min-w-0">
+              <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
+                <span className="font-semibold text-white text-sm truncate">{matchup1Team2?.name}</span>
                 <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-slate-700 to-slate-600 text-slate-300">
                   4
                 </div>
-                <span className="font-semibold text-white text-sm truncate">{sortedTeams[1]?.name}</span>
               </div>
             </div>
+            {/* Minutes indicator */}
+            {hasScores && (matchup1Team1?.minutesLeft || matchup1Team2?.minutesLeft) && (
+              <div className="text-xs text-slate-500 text-center mt-2 flex items-center justify-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {Math.max(matchup1Team1?.minutesLeft || 0, matchup1Team2?.minutesLeft || 0)}m remaining
+              </div>
+            )}
           </div>
           
-          {/* Semifinal 2: #2 vs #3 */}
+          {/* Matchup 2: #2 vs #3 */}
           <div 
             onClick={() => onMatchupClick(conference.name, 2)}
             className="bg-slate-800/30 rounded-xl p-4 cursor-pointer hover:bg-slate-800/50 transition-all group"
           >
-            <div className="text-xs text-amber-400/80 font-semibold uppercase tracking-wider mb-3 text-center">
-              Semifinal 2
-            </div>
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
               {/* Team 1 */}
-              <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
-                <span className="font-semibold text-white text-sm truncate">{sortedTeams[2]?.name}</span>
+              <div className="flex-1 flex items-center gap-2 min-w-0">
                 <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-slate-400 to-slate-300 text-black">
                   2
                 </div>
+                <span className="font-semibold text-white text-sm truncate">{matchup2Team1?.name}</span>
               </div>
-              {/* VS */}
-              <span className="text-slate-600 font-medium text-xs px-3 flex-shrink-0">vs</span>
+              {/* Score */}
+              <div className="flex items-center gap-2 px-3">
+                <span className={`font-bold text-lg min-w-[2rem] text-right ${
+                  hasScores && matchup2Team1?.score > matchup2Team2?.score ? 'text-amber-400' : 'text-white'
+                }`}>
+                  {hasScores ? matchup2Team1?.score : '—'}
+                </span>
+                <span className="text-slate-600 text-xs">-</span>
+                <span className={`font-bold text-lg min-w-[2rem] text-left ${
+                  hasScores && matchup2Team2?.score > matchup2Team1?.score ? 'text-amber-400' : 'text-white'
+                }`}>
+                  {hasScores ? matchup2Team2?.score : '—'}
+                </span>
+              </div>
               {/* Team 2 */}
-              <div className="flex-1 flex items-center gap-2 min-w-0">
+              <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
+                <span className="font-semibold text-white text-sm truncate">{matchup2Team2?.name}</span>
                 <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-orange-700 to-amber-700 text-white">
                   3
                 </div>
-                <span className="font-semibold text-white text-sm truncate">{sortedTeams[3]?.name}</span>
               </div>
             </div>
+            {/* Minutes indicator */}
+            {hasScores && (matchup2Team1?.minutesLeft || matchup2Team2?.minutesLeft) && (
+              <div className="text-xs text-slate-500 text-center mt-2 flex items-center justify-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {Math.max(matchup2Team1?.minutesLeft || 0, matchup2Team2?.minutesLeft || 0)}m remaining
+              </div>
+            )}
           </div>
         </div>
       ) : (
