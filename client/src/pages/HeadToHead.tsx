@@ -132,7 +132,11 @@ function PlayerPoints({
     );
   }
 
-  const hasPoints = player.points > 0;
+  // Check if game has started (has stats to show)
+  const gameStarted = hasGameStarted(player);
+  // Show actual points (including 0 and negative) if game started, otherwise show dash
+  const showPoints = gameStarted || player.points !== 0;
+  const pointsValue = Math.round(player.points);
   
   // Determine color based on state
   let colorClass = muted ? 'text-slate-500' : 'text-white';
@@ -142,25 +146,20 @@ function PlayerPoints({
     colorClass = 'text-green-400';
   } else if (losing) {
     colorClass = 'text-red-400';
-  } else if (!hasPoints) {
+  } else if (!showPoints) {
     colorClass = 'text-slate-700';
   }
 
   return (
     <div className="text-right">
       <div className={colorClass} style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
-        {hasPoints ? Math.round(player.points) : '—'}
-        {isLive && hasPoints && (
+        {showPoints ? pointsValue : '—'}
+        {isLive && showPoints && (
           <span className="relative ml-1">
             <span className="absolute -top-0.5 -right-1 h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
           </span>
         )}
       </div>
-      {isLive && player.statLine && (
-        <div className="text-green-400/70" style={{ fontSize: '9px', lineHeight: '12px' }}>
-          {player.statLine}
-        </div>
-      )}
     </div>
   );
 }
