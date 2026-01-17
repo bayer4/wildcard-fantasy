@@ -379,18 +379,38 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
     .prepare(
       `
     SELECT t.id, t.name, c.name as conference_name,
-           COALESCE(ts.starter_points, 0) as total_points
+           COALESCE(ts.starter_points, 0) as total_points,
+           ts.breakdown_json
     FROM teams t
     JOIN conferences c ON t.conference_id = c.id
     LEFT JOIN team_scores ts ON t.id = ts.team_id AND ts.week = ?
     WHERE t.id = ?
   `
     )
-    .get(weekNum, teamId) as { id: string; name: string; conference_name: string; total_points: number } | undefined;
+    .get(weekNum, teamId) as { id: string; name: string; conference_name: string; total_points: number; breakdown_json: string | null } | undefined;
 
   if (!team) {
     res.status(404).json({ error: 'Team not found' });
     return;
+  }
+
+  // Parse player scores from breakdown_json (single source of truth)
+  interface BreakdownPlayer {
+    rosterPlayerId: string;
+    playerId: string;
+    playerName: string;
+    position: string;
+    isStarter: boolean;
+    points: number;
+  }
+  const playerScoresMap = new Map<string, number>();
+  if (team.breakdown_json) {
+    try {
+      const breakdown: BreakdownPlayer[] = JSON.parse(team.breakdown_json);
+      for (const ps of breakdown) {
+        playerScoresMap.set(ps.rosterPlayerId, ps.points);
+      }
+    } catch {}
   }
 
   // Get starters
@@ -398,16 +418,15 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
     .prepare(
       `
     SELECT 
+      rp.id as roster_player_id,
       rp.player_id,
       p.display_name,
       p.position,
       p.nfl_team,
-      le.slot,
-      COALESCE(ps.points, 0) as points
+      le.slot
     FROM roster_players rp
     JOIN players p ON rp.player_id = p.id
     LEFT JOIN lineup_entries le ON rp.id = le.roster_player_id AND le.week = ?
-    LEFT JOIN player_scores ps ON rp.id = ps.roster_player_id AND ps.week = ?
     WHERE rp.team_id = ? AND le.slot IS NOT NULL
     ORDER BY 
       CASE le.slot 
@@ -417,13 +436,13 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
       END
   `
     )
-    .all(weekNum, weekNum, teamId) as Array<{
+    .all(weekNum, teamId) as Array<{
+    roster_player_id: string;
     player_id: string;
     display_name: string;
     position: string;
     nfl_team: string;
     slot: string;
-    points: number;
   }>;
 
   // Get bench players
@@ -431,25 +450,24 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
     .prepare(
       `
     SELECT 
+      rp.id as roster_player_id,
       rp.player_id,
       p.display_name,
       p.position,
-      p.nfl_team,
-      COALESCE(ps.points, 0) as points
+      p.nfl_team
     FROM roster_players rp
     JOIN players p ON rp.player_id = p.id
     LEFT JOIN lineup_entries le ON rp.id = le.roster_player_id AND le.week = ?
-    LEFT JOIN player_scores ps ON rp.id = ps.roster_player_id AND ps.week = ?
     WHERE rp.team_id = ? AND (le.slot IS NULL OR le.id IS NULL)
     ORDER BY p.position, p.display_name
   `
     )
-    .all(weekNum, weekNum, teamId) as Array<{
+    .all(weekNum, teamId) as Array<{
+    roster_player_id: string;
     player_id: string;
     display_name: string;
     position: string;
     nfl_team: string;
-    points: number;
   }>;
 
   res.json({
@@ -465,7 +483,7 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
       position: p.position,
       nflTeam: p.nfl_team,
       slot: p.slot,
-      points: Math.round(p.points),
+      points: Math.round(playerScoresMap.get(p.roster_player_id) ?? 0),
       statLine: generatePublicStatLine(p.position, p.player_id, p.nfl_team, weekNum),
       game: getPublicGameInfo(p.nfl_team, weekNum),
     })),
@@ -473,7 +491,7 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
       displayName: p.display_name,
       position: p.position,
       nflTeam: p.nfl_team,
-      points: Math.round(p.points),
+      points: Math.round(playerScoresMap.get(p.roster_player_id) ?? 0),
       statLine: generatePublicStatLine(p.position, p.player_id, p.nfl_team, weekNum),
       game: getPublicGameInfo(p.nfl_team, weekNum),
     })),
