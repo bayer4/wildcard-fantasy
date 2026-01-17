@@ -360,8 +360,10 @@ export function calculatePlayerScore(
   }
 
   // ===== TURNOVERS =====
-  if (stats.fumbles_lost > 0 && bonuses.turnovers?.fumble) {
-    const fumblePoints = stats.fumbles_lost * bonuses.turnovers.fumble;
+  if (stats.fumbles_lost > 0) {
+    // Default to -1 per fumble if not specified in rules
+    const fumblePenalty = bonuses.turnovers?.fumble ?? -1;
+    const fumblePoints = stats.fumbles_lost * fumblePenalty;
     points += fumblePoints;
     breakdown.push({ category: 'Turnover', stat: 'Fumbles Lost', value: stats.fumbles_lost, points: fumblePoints });
   }
