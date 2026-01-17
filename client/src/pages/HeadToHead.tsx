@@ -33,6 +33,13 @@ function isPlayerLive(player: Player | undefined, debugLive: boolean, debugIndex
   return status === 'in_progress' || status === 'IN_PROGRESS';
 }
 
+// Check if a player's game has started (in_progress or final)
+function hasGameStarted(player: Player | undefined): boolean {
+  if (!player?.game) return false;
+  const status = player.game.gameStatus?.toLowerCase();
+  return status === 'in_progress' || status === 'final';
+}
+
 // Compact game info strip component
 function GameStrip({ game, muted = false, forceLive = false }: { game?: GameInfo | null; muted?: boolean; forceLive?: boolean }) {
   if (!game) {
@@ -493,8 +500,10 @@ export default function HeadToHead() {
               {SLOT_ORDER.map((slot) => {
                 const player = team1Starters.find(p => p.slot === slot);
                 const opponent = team2Starters.find(p => p.slot === slot);
-                const winning = player && opponent && player.points > opponent.points;
-                const losing = player && opponent && player.points < opponent.points;
+                // Only show winning/losing when both players' games have started
+                const bothStarted = hasGameStarted(player) && hasGameStarted(opponent);
+                const winning = bothStarted && player && opponent && player.points > opponent.points;
+                const losing = bothStarted && player && opponent && player.points < opponent.points;
                 const debugLiveIndex = getDebugLiveIndex(team1Starters);
                 const playerIndex = team1Starters.findIndex(p => p.slot === slot);
                 const isLive = isPlayerLive(player, debugLive, debugLiveIndex, playerIndex);
@@ -573,8 +582,10 @@ export default function HeadToHead() {
               {SLOT_ORDER.map((slot) => {
                 const player = team2Starters.find(p => p.slot === slot);
                 const opponent = team1Starters.find(p => p.slot === slot);
-                const winning = player && opponent && player.points > opponent.points;
-                const losing = player && opponent && player.points < opponent.points;
+                // Only show winning/losing when both players' games have started
+                const bothStarted = hasGameStarted(player) && hasGameStarted(opponent);
+                const winning = bothStarted && player && opponent && player.points > opponent.points;
+                const losing = bothStarted && player && opponent && player.points < opponent.points;
                 const debugLiveIndex = getDebugLiveIndex(team2Starters);
                 const playerIndex = team2Starters.findIndex(p => p.slot === slot);
                 const isLive = isPlayerLive(player, debugLive, debugLiveIndex, playerIndex);
