@@ -273,7 +273,26 @@ router.post('/ingest/manual', (req: AuthRequest, res: Response) => {
     }
 
     const result = processManualIngest(data);
-    res.json({ success: true, ...result });
+    
+    // Auto-recalculate scores for affected weeks
+    const weeks = new Set<number>();
+    if (data.playerGameStats) {
+      data.playerGameStats.forEach(s => weeks.add(s.gameWeek));
+    }
+    if (data.defenseGameStats) {
+      data.defenseGameStats.forEach(s => weeks.add(s.gameWeek));
+    }
+    
+    const scoreResults: Record<number, boolean> = {};
+    for (const week of weeks) {
+      const validation = canComputeScores(week);
+      if (validation.canCompute) {
+        const scoreResult = persistTeamScores(week);
+        scoreResults[week] = scoreResult.success;
+      }
+    }
+    
+    res.json({ success: true, ...result, scoresRecalculated: scoreResults });
   } catch (error: any) {
     console.error('Manual ingest error:', error);
     res.status(500).json({ error: 'Failed to process ingest data', details: error.message });
