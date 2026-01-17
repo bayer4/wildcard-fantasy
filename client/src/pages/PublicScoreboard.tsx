@@ -641,8 +641,9 @@ function WildcardHistoricalResults() {
   );
 }
 
-// Bracket order for Divisional round (week 2) - 1v4, 2v3 matchups
-const DIVISIONAL_DRAFT_ORDER: Record<string, string[]> = {
+// Bracket order for Divisional round - matches HeadToHead.tsx
+// Matchup 1 = teams[0] vs teams[1], Matchup 2 = teams[2] vs teams[3]
+const BRACKET_ORDER: Record<string, string[]> = {
   NFC: ["Sacks and the City", "CMFers", "Masters of the Universe", "Stacy's Mom"],
   AFC: ["Bash Brothers", "Pole Patrol", "Nemesis Enforcer", "Monday Morning QBs"],
 };
@@ -660,9 +661,9 @@ function ConferenceCard({ conference, isPoolRound, week, onTeamClick, onMatchupC
   const hasScores = conference.teams.some(t => t.score > 0);
   const isNFC = conference.name === 'NFC';
   
-  // For H2H weeks, use draft order for matchups
-  const draftOrder = DIVISIONAL_DRAFT_ORDER[conference.name] || [];
-  const teamsByDraft = draftOrder.map(name => 
+  // For H2H weeks, use bracket order for matchups (same as HeadToHead.tsx)
+  const bracketOrder = BRACKET_ORDER[conference.name] || [];
+  const teamsByBracket = bracketOrder.map(name => 
     conference.teams.find(t => t.name === name) || { id: '', name, score: 0 }
   );
   
@@ -671,16 +672,16 @@ function ConferenceCard({ conference, isPoolRound, week, onTeamClick, onMatchupC
     if (hasScores) {
       return b.score - a.score;
     }
-    return draftOrder.indexOf(a.name) - draftOrder.indexOf(b.name);
+    return bracketOrder.indexOf(a.name) - bracketOrder.indexOf(b.name);
   });
   
   const winner = sortedTeams[0];
   
-  // Get matchup teams (by seed): Matchup 1 = #1 vs #4, Matchup 2 = #2 vs #3
-  const matchup1Team1 = teamsByDraft[0]; // #1 seed
-  const matchup1Team2 = teamsByDraft[3]; // #4 seed
-  const matchup2Team1 = teamsByDraft[1]; // #2 seed
-  const matchup2Team2 = teamsByDraft[2]; // #3 seed
+  // Get matchup teams: Matchup 1 = [0] vs [1], Matchup 2 = [2] vs [3]
+  const matchup1Team1 = teamsByBracket[0];
+  const matchup1Team2 = teamsByBracket[1];
+  const matchup2Team1 = teamsByBracket[2];
+  const matchup2Team2 = teamsByBracket[3];
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
@@ -706,39 +707,33 @@ function ConferenceCard({ conference, isPoolRound, week, onTeamClick, onMatchupC
       {/* Teams List - Bracket format for H2H rounds */}
       {week >= 2 ? (
         <div className="p-4 space-y-3">
-          {/* Matchup 1: #1 vs #4 */}
+          {/* Matchup 1 */}
           <div 
             onClick={() => onMatchupClick(conference.name, 1)}
             className="bg-slate-800/30 rounded-xl p-4 cursor-pointer hover:bg-slate-800/50 transition-all group"
           >
             <div className="flex items-center justify-between">
               {/* Team 1 */}
-              <div className="flex-1 flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-amber-500 to-yellow-500 text-black">
-                  1
-                </div>
-                <span className="font-semibold text-white text-sm truncate">{matchup1Team1?.name}</span>
+              <div className="flex-1 min-w-0">
+                <span className="font-semibold text-white text-sm truncate block">{matchup1Team1?.name}</span>
               </div>
               {/* Score */}
-              <div className="flex items-center gap-2 px-3">
-                <span className={`font-bold text-lg min-w-[2rem] text-right ${
+              <div className="flex items-center gap-2 px-4">
+                <span className={`font-bold text-xl min-w-[2rem] text-right ${
                   hasScores && matchup1Team1?.score > matchup1Team2?.score ? 'text-amber-400' : 'text-white'
                 }`}>
                   {hasScores ? matchup1Team1?.score : '—'}
                 </span>
-                <span className="text-slate-600 text-xs">-</span>
-                <span className={`font-bold text-lg min-w-[2rem] text-left ${
+                <span className="text-slate-600 text-sm">-</span>
+                <span className={`font-bold text-xl min-w-[2rem] text-left ${
                   hasScores && matchup1Team2?.score > matchup1Team1?.score ? 'text-amber-400' : 'text-white'
                 }`}>
                   {hasScores ? matchup1Team2?.score : '—'}
                 </span>
               </div>
               {/* Team 2 */}
-              <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
-                <span className="font-semibold text-white text-sm truncate">{matchup1Team2?.name}</span>
-                <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-slate-700 to-slate-600 text-slate-300">
-                  4
-                </div>
+              <div className="flex-1 min-w-0 text-right">
+                <span className="font-semibold text-white text-sm truncate block">{matchup1Team2?.name}</span>
               </div>
             </div>
             {/* Minutes indicator */}
@@ -752,39 +747,33 @@ function ConferenceCard({ conference, isPoolRound, week, onTeamClick, onMatchupC
             )}
           </div>
           
-          {/* Matchup 2: #2 vs #3 */}
+          {/* Matchup 2 */}
           <div 
             onClick={() => onMatchupClick(conference.name, 2)}
             className="bg-slate-800/30 rounded-xl p-4 cursor-pointer hover:bg-slate-800/50 transition-all group"
           >
             <div className="flex items-center justify-between">
               {/* Team 1 */}
-              <div className="flex-1 flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-slate-400 to-slate-300 text-black">
-                  2
-                </div>
-                <span className="font-semibold text-white text-sm truncate">{matchup2Team1?.name}</span>
+              <div className="flex-1 min-w-0">
+                <span className="font-semibold text-white text-sm truncate block">{matchup2Team1?.name}</span>
               </div>
               {/* Score */}
-              <div className="flex items-center gap-2 px-3">
-                <span className={`font-bold text-lg min-w-[2rem] text-right ${
+              <div className="flex items-center gap-2 px-4">
+                <span className={`font-bold text-xl min-w-[2rem] text-right ${
                   hasScores && matchup2Team1?.score > matchup2Team2?.score ? 'text-amber-400' : 'text-white'
                 }`}>
                   {hasScores ? matchup2Team1?.score : '—'}
                 </span>
-                <span className="text-slate-600 text-xs">-</span>
-                <span className={`font-bold text-lg min-w-[2rem] text-left ${
+                <span className="text-slate-600 text-sm">-</span>
+                <span className={`font-bold text-xl min-w-[2rem] text-left ${
                   hasScores && matchup2Team2?.score > matchup2Team1?.score ? 'text-amber-400' : 'text-white'
                 }`}>
                   {hasScores ? matchup2Team2?.score : '—'}
                 </span>
               </div>
               {/* Team 2 */}
-              <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
-                <span className="font-semibold text-white text-sm truncate">{matchup2Team2?.name}</span>
-                <div className="w-7 h-7 flex-shrink-0 rounded-md flex items-center justify-center font-bold text-xs bg-gradient-to-br from-orange-700 to-amber-700 text-white">
-                  3
-                </div>
+              <div className="flex-1 min-w-0 text-right">
+                <span className="font-semibold text-white text-sm truncate block">{matchup2Team2?.name}</span>
               </div>
             </div>
             {/* Minutes indicator */}
