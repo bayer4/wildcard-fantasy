@@ -128,6 +128,7 @@ export default function AdminTeamDetail() {
   const [selectedBenchPlayer, setSelectedBenchPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [forceMode, setForceMode] = useState(false);
 
   // Load initial settings
   useEffect(() => {
@@ -200,8 +201,8 @@ export default function AdminTeamDetail() {
   const handleBenchPlayerClick = async (player: Player, targetSlot?: SlotType) => {
     if (!teamId) return;
     
-    if (player.isLocked) {
-      setMessage({ type: 'error', text: `${player.displayName} is locked: ${player.lockReason}` });
+    if (player.isLocked && !forceMode) {
+      setMessage({ type: 'error', text: `${player.displayName} is locked: ${player.lockReason}. Enable Force Mode to override.` });
       return;
     }
 
@@ -217,7 +218,7 @@ export default function AdminTeamDetail() {
       }
 
       try {
-        await adminApi.assignSlot(teamId, selectedWeek, player.rosterPlayerId, slotToUse);
+        await adminApi.assignSlot(teamId, selectedWeek, player.rosterPlayerId, slotToUse, forceMode);
         setSelectedSlot(null);
         setSelectedBenchPlayer(null);
         setMessage(null);
@@ -243,13 +244,13 @@ export default function AdminTeamDetail() {
     const player = lineupData?.lineup[slot];
     if (!player) return;
 
-    if (player.isLocked) {
-      setMessage({ type: 'error', text: `${player.displayName} is locked: ${player.lockReason}` });
+    if (player.isLocked && !forceMode) {
+      setMessage({ type: 'error', text: `${player.displayName} is locked: ${player.lockReason}. Enable Force Mode to override.` });
       return;
     }
 
     try {
-      await adminApi.benchPlayer(teamId, selectedWeek, player.rosterPlayerId);
+      await adminApi.benchPlayer(teamId, selectedWeek, player.rosterPlayerId, forceMode);
       setMessage(null);
       loadLineup();
     } catch (err: any) {
@@ -294,18 +295,31 @@ export default function AdminTeamDetail() {
           <h1 className="text-3xl font-bold text-white">{lineupData.team.name}</h1>
           <p className="text-slate-400">{lineupData.team.conferenceName} Conference</p>
         </div>
-        <div className="flex items-center gap-4">
-          <label className="text-slate-400 text-sm">Round:</label>
-          <select
-            value={selectedWeek}
-            onChange={(e) => setSelectedWeek(parseInt(e.target.value))}
-            className="bg-slate-800 text-white px-3 py-2 rounded-lg border border-slate-700 focus:border-amber-500 focus:outline-none"
-          >
-            <option value={1}>Wildcard</option>
-            <option value={2}>Divisional</option>
-            <option value={3}>Conference</option>
-            <option value={4}>Super Bowl</option>
-          </select>
+        <div className="flex items-center gap-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={forceMode}
+              onChange={(e) => setForceMode(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-red-500 focus:ring-red-500"
+            />
+            <span className={`text-sm font-medium ${forceMode ? 'text-red-400' : 'text-slate-400'}`}>
+              Force Mode {forceMode && '(bypasses locks)'}
+            </span>
+          </label>
+          <div className="flex items-center gap-2">
+            <label className="text-slate-400 text-sm">Round:</label>
+            <select
+              value={selectedWeek}
+              onChange={(e) => setSelectedWeek(parseInt(e.target.value))}
+              className="bg-slate-800 text-white px-3 py-2 rounded-lg border border-slate-700 focus:border-amber-500 focus:outline-none"
+            >
+              <option value={1}>Wildcard</option>
+              <option value={2}>Divisional</option>
+              <option value={3}>Conference</option>
+              <option value={4}>Super Bowl</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -372,15 +386,19 @@ export default function AdminTeamDetail() {
                       </div>
                     )}
                   </div>
-                  {player && !player.isLocked && (
+                  {player && (!player.isLocked || forceMode) && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleBenchStarter(slot);
                       }}
-                      className="px-3 py-1 rounded text-sm font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                        player.isLocked && forceMode
+                          ? 'bg-red-600 text-white hover:bg-red-500'
+                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      }`}
                     >
-                      Bench
+                      {player.isLocked && forceMode ? 'Force Bench' : 'Bench'}
                     </button>
                   )}
                 </div>
@@ -481,18 +499,21 @@ export default function AdminTeamDetail() {
                               const currentPlayer = lineupData.lineup[slot];
                               if (!currentPlayer) return null;
                               const isLocked = currentPlayer.isLocked;
+                              const canSwap = !isLocked || forceMode;
                               return (
                                 <button
                                   key={slot}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (!isLocked) handleBenchPlayerClick(player, slot);
+                                    if (canSwap) handleBenchPlayerClick(player, slot);
                                   }}
-                                  disabled={isLocked}
+                                  disabled={!canSwap}
                                   className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
-                                    isLocked 
+                                    !canSwap
                                       ? 'bg-slate-700 text-slate-500 cursor-not-allowed' 
-                                      : 'bg-slate-600 hover:bg-slate-500 text-slate-200'
+                                      : isLocked && forceMode
+                                        ? 'bg-red-600 hover:bg-red-500 text-white'
+                                        : 'bg-slate-600 hover:bg-slate-500 text-slate-200'
                                   }`}
                                 >
                                   ↔ {currentPlayer.displayName.split(' ').pop()}

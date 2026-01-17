@@ -596,7 +596,7 @@ router.get('/teams/:teamId', (req: AuthRequest, res: Response) => {
 // Admin: Assign player to slot for any team
 router.put('/teams/:teamId/lineup/:week/assign', (req: AuthRequest, res: Response) => {
   const { teamId, week } = req.params;
-  const { rosterPlayerId, slot } = req.body;
+  const { rosterPlayerId, slot, force } = req.body;
   const weekNum = parseInt(week);
 
   if (!rosterPlayerId || !slot) {
@@ -622,11 +622,13 @@ router.put('/teams/:teamId/lineup/:week/assign', (req: AuthRequest, res: Respons
     return;
   }
 
-  // Check if player is locked
-  const lockStatus = isPlayerLocked(player.nfl_team, weekNum);
-  if (lockStatus.locked) {
-    res.status(403).json({ error: `Cannot modify lineup: ${lockStatus.reason}` });
-    return;
+  // Check if player is locked (admin can bypass with force=true)
+  if (!force) {
+    const lockStatus = isPlayerLocked(player.nfl_team, weekNum);
+    if (lockStatus.locked) {
+      res.status(403).json({ error: `Cannot modify lineup: ${lockStatus.reason}` });
+      return;
+    }
   }
 
   // Validate slot eligibility
@@ -647,7 +649,7 @@ router.put('/teams/:teamId/lineup/:week/assign', (req: AuthRequest, res: Respons
     WHERE rp.team_id = ? AND le.week = ? AND le.slot = ?
   `).get(teamId, weekNum, slot) as { id: string; roster_player_id: string; display_name: string; nfl_team: string } | undefined;
 
-  if (currentOccupant) {
+  if (currentOccupant && !force) {
     const occupantLock = isPlayerLocked(currentOccupant.nfl_team, weekNum);
     if (occupantLock.locked) {
       res.status(403).json({ error: `Cannot swap: ${currentOccupant.display_name} is locked (${occupantLock.reason})` });
@@ -697,7 +699,7 @@ router.put('/teams/:teamId/lineup/:week/assign', (req: AuthRequest, res: Respons
 // Admin: Move player to bench for any team
 router.put('/teams/:teamId/lineup/:week/bench', (req: AuthRequest, res: Response) => {
   const { teamId, week } = req.params;
-  const { rosterPlayerId } = req.body;
+  const { rosterPlayerId, force } = req.body;
   const weekNum = parseInt(week);
 
   if (!rosterPlayerId) {
@@ -717,10 +719,13 @@ router.put('/teams/:teamId/lineup/:week/bench', (req: AuthRequest, res: Response
     return;
   }
 
-  const lockStatus = isPlayerLocked(player.nfl_team, weekNum);
-  if (lockStatus.locked) {
-    res.status(403).json({ error: `Cannot modify lineup: ${lockStatus.reason}` });
-    return;
+  // Check if player is locked (admin can bypass with force=true)
+  if (!force) {
+    const lockStatus = isPlayerLocked(player.nfl_team, weekNum);
+    if (lockStatus.locked) {
+      res.status(403).json({ error: `Cannot modify lineup: ${lockStatus.reason}` });
+      return;
+    }
   }
 
   const now = new Date().toISOString();

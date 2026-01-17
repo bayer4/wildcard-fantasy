@@ -133,10 +133,10 @@ export const adminApi = {
     api.get(`/admin/teams/${teamId}`, { params: week ? { week } : {} }),
   
   // Slot-based lineup management
-  assignSlot: (teamId: string, week: number, rosterPlayerId: string, slot: string) =>
-    api.put(`/admin/teams/${teamId}/lineup/${week}/assign`, { rosterPlayerId, slot }),
-  benchPlayer: (teamId: string, week: number, rosterPlayerId: string) =>
-    api.put(`/admin/teams/${teamId}/lineup/${week}/bench`, { rosterPlayerId }),
+  assignSlot: (teamId: string, week: number, rosterPlayerId: string, slot: string, force?: boolean) =>
+    api.put(`/admin/teams/${teamId}/lineup/${week}/assign`, { rosterPlayerId, slot, force }),
+  benchPlayer: (teamId: string, week: number, rosterPlayerId: string, force?: boolean) =>
+    api.put(`/admin/teams/${teamId}/lineup/${week}/bench`, { rosterPlayerId, force }),
 
   // Scoring Rules
   uploadRules: (name: string, rules: any) =>
