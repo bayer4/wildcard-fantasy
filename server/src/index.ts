@@ -378,13 +378,15 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
   const team = db
     .prepare(
       `
-    SELECT t.id, t.name, c.name as conference_name
+    SELECT t.id, t.name, c.name as conference_name,
+           COALESCE(ts.starter_points, 0) as total_points
     FROM teams t
     JOIN conferences c ON t.conference_id = c.id
+    LEFT JOIN team_scores ts ON t.id = ts.team_id AND ts.week = ?
     WHERE t.id = ?
   `
     )
-    .get(teamId) as { id: string; name: string; conference_name: string } | undefined;
+    .get(weekNum, teamId) as { id: string; name: string; conference_name: string; total_points: number } | undefined;
 
   if (!team) {
     res.status(404).json({ error: 'Team not found' });
@@ -450,14 +452,12 @@ app.get('/api/public/team/:teamId', (req: Request, res: Response) => {
     points: number;
   }>;
 
-  const totalPoints = Math.round(starters.reduce((sum, p) => sum + p.points, 0));
-
   res.json({
     team: {
       id: team.id,
       name: team.name,
       conferenceName: team.conference_name,
-      totalPoints,
+      totalPoints: Math.round(team.total_points),
       minutesLeft: getMinutesLeft(teamId, weekNum),
     },
     starters: starters.map((p) => ({
