@@ -512,20 +512,20 @@ export default function HeadToHead() {
                 const rowBg = isLive ? 'bg-green-500/10' : '';
                 
                 return (
-                  <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${rowBg}`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 text-[10px] font-semibold uppercase ${isLive ? 'text-green-400' : 'text-slate-500'}`}>
+                  <div key={slot} className={`px-4 h-16 flex items-center justify-between ${rowBg}`}>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`w-10 flex-shrink-0 text-[10px] font-semibold uppercase ${isLive ? 'text-green-400' : 'text-slate-500'}`}>
                         {SLOT_LABELS[slot]}
                       </div>
                       {player ? (
-                        <div>
-                          <div className={isLive ? 'text-green-400' : 'text-white'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                          <GameStrip game={player.game} forceLive={isLive} />
-                          {hasGameStarted(player) && player.statLine && (
-                            <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
-                              {player.statLine}
-                            </div>
-                          )}
+                        <div className="min-w-0 flex-1">
+                          <div className={`truncate ${isLive ? 'text-green-400' : 'text-white'}`} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                          <div className="flex items-center gap-1.5 text-slate-500" style={{ fontSize: '10px', lineHeight: '14px' }}>
+                            <GameStrip game={player.game} forceLive={isLive} />
+                          </div>
+                          <div className={`truncate h-3 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
+                            {hasGameStarted(player) && player.statLine ? player.statLine : '\u00A0'}
+                          </div>
                         </div>
                       ) : (
                         <div className="text-slate-600" style={{ fontSize: '0.875rem', lineHeight: '1.25rem' }}>Empty</div>
@@ -540,26 +540,26 @@ export default function HeadToHead() {
             {/* Bench Section */}
             {data.team1.bench.length > 0 && (
               <div className="mt-2 border-t border-slate-700/50">
-                <div className="px-4 py-2.5 bg-slate-800/40">
+                <div className="px-4 py-2 bg-slate-800/40">
                   <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Bench</span>
                 </div>
                 <div className="divide-y divide-slate-800/20 bg-slate-900/30">
                   {data.team1.bench.map((player, idx) => {
                     const isLive = isPlayerLive(player, debugLive, 0, idx === 0 ? 0 : -1);
                     return (
-                      <div key={idx} className={`px-4 py-2.5 flex items-center justify-between ${isLive ? 'bg-green-500/5' : ''}`}>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 text-[10px] font-semibold uppercase ${isLive ? 'text-green-500' : 'text-slate-600'}`}>
+                      <div key={idx} className={`px-4 h-16 flex items-center justify-between ${isLive ? 'bg-green-500/5' : ''}`}>
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className={`w-10 flex-shrink-0 text-[10px] font-semibold uppercase ${isLive ? 'text-green-500' : 'text-slate-600'}`}>
                             {player.position}
                           </div>
-                          <div>
-                            <div className={isLive ? 'text-green-400' : 'text-slate-400'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                            <GameStrip game={player.game} muted={!isLive} forceLive={isLive} />
-                            {hasGameStarted(player) && player.statLine && (
-                              <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
-                                {player.statLine}
-                              </div>
-                            )}
+                          <div className="min-w-0 flex-1">
+                            <div className={`truncate ${isLive ? 'text-green-400' : 'text-slate-400'}`} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                            <div className="flex items-center gap-1.5 text-slate-500" style={{ fontSize: '10px', lineHeight: '14px' }}>
+                              <GameStrip game={player.game} muted={!isLive} forceLive={isLive} />
+                            </div>
+                            <div className={`truncate h-3 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
+                              {hasGameStarted(player) && player.statLine ? player.statLine : '\u00A0'}
+                            </div>
                           </div>
                         </div>
                         <PlayerPoints player={player} isLive={isLive} muted={!isLive} />
@@ -603,20 +603,20 @@ export default function HeadToHead() {
                 const rowBg = isLive ? 'bg-green-500/10' : '';
                 
                 return (
-                  <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${rowBg}`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 text-[10px] font-semibold uppercase ${isLive ? 'text-green-400' : 'text-slate-500'}`}>
+                  <div key={slot} className={`px-4 h-16 flex items-center justify-between ${rowBg}`}>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`w-10 flex-shrink-0 text-[10px] font-semibold uppercase ${isLive ? 'text-green-400' : 'text-slate-500'}`}>
                         {SLOT_LABELS[slot]}
                       </div>
                       {player ? (
-                        <div>
-                          <div className={isLive ? 'text-green-400' : 'text-white'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                          <GameStrip game={player.game} forceLive={isLive} />
-                          {hasGameStarted(player) && player.statLine && (
-                            <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
-                              {player.statLine}
-                            </div>
-                          )}
+                        <div className="min-w-0 flex-1">
+                          <div className={`truncate ${isLive ? 'text-green-400' : 'text-white'}`} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                          <div className="flex items-center gap-1.5 text-slate-500" style={{ fontSize: '10px', lineHeight: '14px' }}>
+                            <GameStrip game={player.game} forceLive={isLive} />
+                          </div>
+                          <div className={`truncate h-3 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
+                            {hasGameStarted(player) && player.statLine ? player.statLine : '\u00A0'}
+                          </div>
                         </div>
                       ) : (
                         <div className="text-slate-600" style={{ fontSize: '0.875rem', lineHeight: '1.25rem' }}>Empty</div>
@@ -631,26 +631,26 @@ export default function HeadToHead() {
             {/* Bench Section */}
             {data.team2.bench.length > 0 && (
               <div className="mt-2 border-t border-slate-700/50">
-                <div className="px-4 py-2.5 bg-slate-800/40">
+                <div className="px-4 py-2 bg-slate-800/40">
                   <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Bench</span>
                 </div>
                 <div className="divide-y divide-slate-800/20 bg-slate-900/30">
                   {data.team2.bench.map((player, idx) => {
                     const isLive = isPlayerLive(player, debugLive, 0, idx === 0 ? 0 : -1);
                     return (
-                      <div key={idx} className={`px-4 py-2.5 flex items-center justify-between ${isLive ? 'bg-green-500/5' : ''}`}>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 text-[10px] font-semibold uppercase ${isLive ? 'text-green-500' : 'text-slate-600'}`}>
+                      <div key={idx} className={`px-4 h-16 flex items-center justify-between ${isLive ? 'bg-green-500/5' : ''}`}>
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className={`w-10 flex-shrink-0 text-[10px] font-semibold uppercase ${isLive ? 'text-green-500' : 'text-slate-600'}`}>
                             {player.position}
                           </div>
-                          <div>
-                            <div className={isLive ? 'text-green-400' : 'text-slate-400'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                            <GameStrip game={player.game} muted={!isLive} forceLive={isLive} />
-                            {hasGameStarted(player) && player.statLine && (
-                              <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
-                                {player.statLine}
-                              </div>
-                            )}
+                          <div className="min-w-0 flex-1">
+                            <div className={`truncate ${isLive ? 'text-green-400' : 'text-slate-400'}`} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
+                            <div className="flex items-center gap-1.5 text-slate-500" style={{ fontSize: '10px', lineHeight: '14px' }}>
+                              <GameStrip game={player.game} muted={!isLive} forceLive={isLive} />
+                            </div>
+                            <div className={`truncate h-3 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
+                              {hasGameStarted(player) && player.statLine ? player.statLine : '\u00A0'}
+                            </div>
                           </div>
                         </div>
                         <PlayerPoints player={player} isLive={isLive} muted={!isLive} />
