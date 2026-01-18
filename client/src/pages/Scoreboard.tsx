@@ -267,7 +267,7 @@ function FutureRoundCard({ roundName }: { roundName: string }) {
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl border border-slate-700/50 p-8 text-center">
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-amber-500/20 to-yellow-500/20 mb-4">
-        <span className="text-4xl">🏆</span>
+        <span className="text-4xl font-black text-amber-400">SB</span>
       </div>
       <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-400 mb-2">
         Super Bowl
@@ -327,7 +327,7 @@ function WildcardHistoricalResults() {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-slate-500 uppercase tracking-wide">🏆 Winner</div>
+              <div className="text-xs text-slate-500 uppercase tracking-wide">Winner</div>
               <div className="text-amber-400 font-bold">Pole Patrol</div>
             </div>
           </div>
@@ -351,7 +351,7 @@ function WildcardHistoricalResults() {
                 </div>
                 <div>
                   <h3 className={`font-semibold ${team.isWinner ? 'text-amber-400' : 'text-white'}`}>
-                    {team.name} {team.isWinner && '🏆'}
+                    {team.name}
                   </h3>
                 </div>
               </div>
@@ -380,7 +380,7 @@ function WildcardHistoricalResults() {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-slate-500 uppercase tracking-wide">🏆 Winner</div>
+              <div className="text-xs text-slate-500 uppercase tracking-wide">Winner</div>
               <div className="text-amber-400 font-bold">CMFers</div>
             </div>
           </div>
@@ -404,7 +404,7 @@ function WildcardHistoricalResults() {
                 </div>
                 <div>
                   <h3 className={`font-semibold ${team.isWinner ? 'text-amber-400' : 'text-white'}`}>
-                    {team.name} {team.isWinner && '🏆'}
+                    {team.name}
                   </h3>
                 </div>
               </div>
@@ -472,7 +472,6 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, week, onTeamClick
         </span>
         {hasScores && winner && (
           <div className="flex items-center justify-center gap-2 mt-1">
-            <span className="text-amber-400">🏆</span>
             <span className="text-amber-400 font-bold text-sm">{winner.name}</span>
           </div>
         )}

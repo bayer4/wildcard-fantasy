@@ -369,58 +369,42 @@ export function calculatePlayerScore(
   }
 
   // ===== KICKING =====
+  // BCFL Custom Rules:
+  // - FG 0-52 yards = 3 pts
+  // - FG 53-54 yards = 4 pts  
+  // - FG 55+ yards = 6 pts
+  // - XP = 1 pt
+  // Since ESPN data uses buckets (0-39, 40-49, 50-54, 55+), we cannot distinguish
+  // 50-52 from 53-54. Conservative approach: treat all 50-54 as 3 pts (0-52 bucket).
   if (position === 'K') {
-    const kicking = bonuses.kicking || {};
-    
-    // FGs under 53 yards (0-52)
-    const fgsUnder53 = stats.fg_made_0_39 + stats.fg_made_40_49 + 
-                       (stats.fg_made_50_54 > 0 ? Math.max(0, stats.fg_made_50_54 - countFG53Plus(stats)) : 0);
-    // Simplified: assume fg_made_0_39 and fg_made_40_49 are all under 53
-    const totalFGsUnder53 = stats.fg_made_0_39 + stats.fg_made_40_49;
-    if (totalFGsUnder53 > 0 && kicking.fgUnder53) {
-      const pts = totalFGsUnder53 * kicking.fgUnder53;
+    // FG 0-54 yards: all count as 3 pts each (can't distinguish 53-54 from 50-52)
+    const fgUnder55Count = stats.fg_made_0_39 + stats.fg_made_40_49 + stats.fg_made_50_54;
+    if (fgUnder55Count > 0) {
+      const pts = fgUnder55Count * 3;
       points += pts;
-      breakdown.push({ category: 'Kicking', stat: 'FG <53', value: totalFGsUnder53, points: pts });
+      breakdown.push({ category: 'Kicking', stat: 'FG Made', value: fgUnder55Count, points: pts });
     }
 
-    // FG 53-54 (part of 50-54 bucket)
-    // We'll count 50-54 bucket as a mix, but BCFL might need more granular data
-    // For now, treat fg_made_50_54 as "around 53"
-    if (stats.fg_made_50_54 > 0 && kicking.fg53or54) {
-      const pts = stats.fg_made_50_54 * kicking.fg53or54;
-      points += pts;
-      breakdown.push({ category: 'Kicking', stat: 'FG 53-54', value: stats.fg_made_50_54, points: pts });
-    }
-
-    // FG 55+ (base points + bonus)
-    // fg55Plus is the BONUS on top of base FG value
+    // FG 55+ yards = 6 pts each
     if (stats.fg_made_55_plus > 0) {
-      const basePts = kicking.fgUnder53 || 3;  // Base FG value
-      const bonusPts = kicking.fg55Plus || 0;  // Additional bonus for 55+
-      const pts = stats.fg_made_55_plus * (basePts + bonusPts);
+      const pts = stats.fg_made_55_plus * 6;
       points += pts;
       breakdown.push({ category: 'Kicking', stat: 'FG 55+', value: stats.fg_made_55_plus, points: pts });
     }
 
-    // XP Made (NFL face value = 1)
+    // XP Made = 1 pt each (NFL face value)
     if (stats.xp_made > 0) {
       points += stats.xp_made;
       breakdown.push({ category: 'Kicking', stat: 'XP Made', value: stats.xp_made, points: stats.xp_made });
     }
 
-    // Missed XP
+    // Missed XP penalty (if rules define it)
+    const kicking = bonuses.kicking || {};
     if (stats.xp_missed > 0 && kicking.missedXP) {
       const pts = stats.xp_missed * kicking.missedXP;
       points += pts;
       breakdown.push({ category: 'Kicking', stat: 'XP Missed', value: stats.xp_missed, points: pts });
     }
-
-    // Missed FG penalties only apply to short misses (under 40 yards)
-    // Since we don't track miss distance, no automatic penalty is applied
-    // Use manual bonuses via Admin -> Ingest for short miss penalties:
-    //   - missedFG30to39: -1
-    //   - missedFG29orLess: -2
-    // Misses 40+ yards have no penalty
   }
 
   // ===== EVENT-BASED BONUSES (50+ yard TDs, etc.) =====
