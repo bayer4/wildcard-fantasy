@@ -520,8 +520,8 @@ export default function HeadToHead() {
                         <div>
                           <div className={isLive ? 'text-green-400' : 'text-white'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
                           <GameStrip game={player.game} forceLive={isLive} />
-                          {isLive && player.statLine && (
-                            <div className="text-green-400/70 mt-0.5" style={{ fontSize: '9px', lineHeight: '12px' }}>
+                          {hasGameStarted(player) && player.statLine && (
+                            <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
                               {player.statLine}
                             </div>
                           )}
@@ -554,8 +554,8 @@ export default function HeadToHead() {
                           <div>
                             <div className={isLive ? 'text-green-400' : 'text-slate-400'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
                             <GameStrip game={player.game} muted={!isLive} forceLive={isLive} />
-                            {isLive && player.statLine && (
-                              <div className="text-green-400/70 mt-0.5" style={{ fontSize: '9px', lineHeight: '12px' }}>
+                            {hasGameStarted(player) && player.statLine && (
+                              <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
                                 {player.statLine}
                               </div>
                             )}
@@ -602,8 +602,8 @@ export default function HeadToHead() {
                         <div>
                           <div className={isLive ? 'text-green-400' : 'text-white'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
                           <GameStrip game={player.game} forceLive={isLive} />
-                          {isLive && player.statLine && (
-                            <div className="text-green-400/70 mt-0.5" style={{ fontSize: '9px', lineHeight: '12px' }}>
+                          {hasGameStarted(player) && player.statLine && (
+                            <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
                               {player.statLine}
                             </div>
                           )}
@@ -636,8 +636,8 @@ export default function HeadToHead() {
                           <div>
                             <div className={isLive ? 'text-green-400' : 'text-slate-400'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
                             <GameStrip game={player.game} muted={!isLive} forceLive={isLive} />
-                            {isLive && player.statLine && (
-                              <div className="text-green-400/70 mt-0.5" style={{ fontSize: '9px', lineHeight: '12px' }}>
+                            {hasGameStarted(player) && player.statLine && (
+                              <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
                                 {player.statLine}
                               </div>
                             )}
