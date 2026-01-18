@@ -736,15 +736,17 @@ function ConferenceCard({ conference, isPoolRound, week, onTeamClick, onMatchupC
                 <span className="font-semibold text-white text-sm truncate block">{matchup1Team2?.name}</span>
               </div>
             </div>
-            {/* Minutes indicator */}
-            {hasScores && (matchup1Team1?.minutesLeft || matchup1Team2?.minutesLeft) && (
+            {/* Minutes indicator - per team */}
+            {hasScores && (matchup1Team1?.minutesLeft || matchup1Team2?.minutesLeft) ? (
               <div className="text-xs text-slate-500 text-center mt-2 flex items-center justify-center gap-1">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {Math.max(matchup1Team1?.minutesLeft || 0, matchup1Team2?.minutesLeft || 0)}m remaining
+                <span>{matchup1Team1?.minutesLeft || 0}m</span>
+                <span className="text-slate-600">•</span>
+                <span>{matchup1Team2?.minutesLeft || 0}m</span>
               </div>
-            )}
+            ) : null}
           </div>
           
           {/* Matchup 2 */}
@@ -776,15 +778,17 @@ function ConferenceCard({ conference, isPoolRound, week, onTeamClick, onMatchupC
                 <span className="font-semibold text-white text-sm truncate block">{matchup2Team2?.name}</span>
               </div>
             </div>
-            {/* Minutes indicator */}
-            {hasScores && (matchup2Team1?.minutesLeft || matchup2Team2?.minutesLeft) && (
+            {/* Minutes indicator - per team */}
+            {hasScores && (matchup2Team1?.minutesLeft || matchup2Team2?.minutesLeft) ? (
               <div className="text-xs text-slate-500 text-center mt-2 flex items-center justify-center gap-1">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {Math.max(matchup2Team1?.minutesLeft || 0, matchup2Team2?.minutesLeft || 0)}m remaining
+                <span>{matchup2Team1?.minutesLeft || 0}m</span>
+                <span className="text-slate-600">•</span>
+                <span>{matchup2Team2?.minutesLeft || 0}m</span>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       ) : (

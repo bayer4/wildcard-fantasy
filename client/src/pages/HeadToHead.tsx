@@ -115,13 +115,11 @@ function PlayerPoints({
   player, 
   isLive, 
   winning, 
-  losing, 
   muted = false 
 }: { 
   player: Player | undefined; 
   isLive: boolean; 
-  winning?: boolean; 
-  losing?: boolean;
+  winning?: boolean;
   muted?: boolean;
 }) {
   if (!player) {
@@ -138,14 +136,12 @@ function PlayerPoints({
   const showPoints = gameStarted || player.points !== 0;
   const pointsValue = Math.round(player.points);
   
-  // Determine color based on state
+  // Determine color based on state (no red for losing - keep neutral)
   let colorClass = muted ? 'text-slate-500' : 'text-white';
   if (isLive) {
     colorClass = 'text-green-400';
   } else if (winning) {
     colorClass = 'text-green-400';
-  } else if (losing) {
-    colorClass = 'text-red-400';
   } else if (!showPoints) {
     colorClass = 'text-slate-700';
   }
@@ -163,6 +159,7 @@ interface TeamData {
   id: string;
   name: string;
   totalPoints: number;
+  minutesLeft: number;
   starters: Player[];
   bench: Player[];
 }
@@ -297,6 +294,7 @@ export default function HeadToHead() {
           id: team1Id,
           name: team1Res.data.team.name,
           totalPoints: team1Res.data.team.totalPoints || 0,
+          minutesLeft: team1Res.data.team.minutesLeft || 0,
           starters: team1Res.data.starters || [],
           bench: team1Res.data.bench || [],
         },
@@ -304,6 +302,7 @@ export default function HeadToHead() {
           id: team2Id,
           name: team2Res.data.team.name,
           totalPoints: team2Res.data.team.totalPoints || 0,
+          minutesLeft: team2Res.data.team.minutesLeft || 0,
           starters: team2Res.data.starters || [],
           bench: team2Res.data.bench || [],
         },
@@ -486,9 +485,19 @@ export default function HeadToHead() {
           {/* Team 1 Lineup */}
           <div className="bg-slate-900/50 rounded-xl border border-slate-800/50 overflow-hidden">
             <div className={`px-4 py-3 border-b border-slate-800/50 ${team1Leading ? 'bg-amber-500/5' : ''}`}>
-              <h2 className={`font-semibold text-sm ${team1Leading ? 'text-amber-400' : 'text-white'}`}>
-                {data.team1.name} {team1Leading && '👑'}
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className={`font-semibold text-sm ${team1Leading ? 'text-amber-400' : 'text-white'}`}>
+                  {data.team1.name}
+                </h2>
+                {data.team1.minutesLeft > 0 && (
+                  <span className="text-xs text-slate-500 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {data.team1.minutesLeft}m
+                  </span>
+                )}
+              </div>
             </div>
             <div className="divide-y divide-slate-800/30">
               {SLOT_ORDER.map((slot) => {
@@ -497,13 +506,12 @@ export default function HeadToHead() {
                 // Only show winning/losing when both players' games have started
                 const bothStarted = hasGameStarted(player) && hasGameStarted(opponent);
                 const winning = bothStarted && player && opponent && player.points > opponent.points;
-                const losing = bothStarted && player && opponent && player.points < opponent.points;
                 const debugLiveIndex = getDebugLiveIndex(team1Starters);
                 const playerIndex = team1Starters.findIndex(p => p.slot === slot);
                 const isLive = isPlayerLive(player, debugLive, debugLiveIndex, playerIndex);
                 
-                // Row background: live takes precedence, then winning/losing
-                const rowBg = isLive ? 'bg-green-500/10' : winning ? 'bg-green-500/5' : losing ? 'bg-red-500/5' : '';
+                // Row background: live or winning only (no red for losing)
+                const rowBg = isLive ? 'bg-green-500/10' : winning ? 'bg-green-500/5' : '';
                 
                 return (
                   <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${rowBg}`}>
@@ -525,7 +533,7 @@ export default function HeadToHead() {
                         <div className="text-slate-600" style={{ fontSize: '0.875rem', lineHeight: '1.25rem' }}>Empty</div>
                       )}
                     </div>
-                    <PlayerPoints player={player} isLive={isLive} winning={winning} losing={losing} />
+                    <PlayerPoints player={player} isLive={isLive} winning={winning} />
                   </div>
                 );
               })}
@@ -568,9 +576,19 @@ export default function HeadToHead() {
           {/* Team 2 Lineup */}
           <div className="bg-slate-900/50 rounded-xl border border-slate-800/50 overflow-hidden">
             <div className={`px-4 py-3 border-b border-slate-800/50 ${team2Leading ? 'bg-amber-500/5' : ''}`}>
-              <h2 className={`font-semibold text-sm ${team2Leading ? 'text-amber-400' : 'text-white'}`}>
-                {data.team2.name} {team2Leading && '👑'}
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className={`font-semibold text-sm ${team2Leading ? 'text-amber-400' : 'text-white'}`}>
+                  {data.team2.name}
+                </h2>
+                {data.team2.minutesLeft > 0 && (
+                  <span className="text-xs text-slate-500 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {data.team2.minutesLeft}m
+                  </span>
+                )}
+              </div>
             </div>
             <div className="divide-y divide-slate-800/30">
               {SLOT_ORDER.map((slot) => {
@@ -579,13 +597,12 @@ export default function HeadToHead() {
                 // Only show winning/losing when both players' games have started
                 const bothStarted = hasGameStarted(player) && hasGameStarted(opponent);
                 const winning = bothStarted && player && opponent && player.points > opponent.points;
-                const losing = bothStarted && player && opponent && player.points < opponent.points;
                 const debugLiveIndex = getDebugLiveIndex(team2Starters);
                 const playerIndex = team2Starters.findIndex(p => p.slot === slot);
                 const isLive = isPlayerLive(player, debugLive, debugLiveIndex, playerIndex);
                 
-                // Row background: live takes precedence, then winning/losing
-                const rowBg = isLive ? 'bg-green-500/10' : winning ? 'bg-green-500/5' : losing ? 'bg-red-500/5' : '';
+                // Row background: live or winning only (no red for losing)
+                const rowBg = isLive ? 'bg-green-500/10' : winning ? 'bg-green-500/5' : '';
                 
                 return (
                   <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${rowBg}`}>
@@ -607,7 +624,7 @@ export default function HeadToHead() {
                         <div className="text-slate-600" style={{ fontSize: '0.875rem', lineHeight: '1.25rem' }}>Empty</div>
                       )}
                     </div>
-                    <PlayerPoints player={player} isLive={isLive} winning={winning} losing={losing} />
+                    <PlayerPoints player={player} isLive={isLive} winning={winning} />
                   </div>
                 );
               })}
