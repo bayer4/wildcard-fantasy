@@ -470,11 +470,6 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, week, onTeamClick
         }`}>
           {conference.name}
         </span>
-        {hasScores && winner && (
-          <div className="flex items-center justify-center gap-2 mt-1">
-            <span className="text-amber-400 font-bold text-sm">{winner.name}</span>
-          </div>
-        )}
       </div>
 
       {/* Teams List - Bracket format with Wildcard styling */}
