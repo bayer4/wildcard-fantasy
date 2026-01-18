@@ -114,7 +114,7 @@ function GameStrip({ game, muted = false, forceLive = false }: { game?: GameInfo
 function PlayerPoints({ 
   player, 
   isLive, 
-  winning, 
+  winning: _winning, 
   muted = false 
 }: { 
   player: Player | undefined; 

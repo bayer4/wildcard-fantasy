@@ -675,8 +675,6 @@ function ConferenceCard({ conference, isPoolRound, week, onTeamClick, onMatchupC
     return bracketOrder.indexOf(a.name) - bracketOrder.indexOf(b.name);
   });
   
-  const winner = sortedTeams[0];
-  
   // Get matchup teams: Matchup 1 = [0] vs [1], Matchup 2 = [2] vs [3]
   const matchup1Team1 = teamsByBracket[0];
   const matchup1Team2 = teamsByBracket[1];

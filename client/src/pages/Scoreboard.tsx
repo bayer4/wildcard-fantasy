@@ -454,7 +454,6 @@ function ConferenceCard({ conference, userTeamId, isPoolRound, week, onTeamClick
     return 0;
   });
   
-  const winner = sortedTeams[0];
   const isNFC = conference.name === 'NFC';
 
   return (
