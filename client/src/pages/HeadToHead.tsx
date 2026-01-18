@@ -154,11 +154,6 @@ function PlayerPoints({
     <div className="text-right">
       <div className={colorClass} style={{ fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 700 }}>
         {showPoints ? pointsValue : '—'}
-        {isLive && showPoints && (
-          <span className="relative ml-1">
-            <span className="absolute -top-0.5 -right-1 h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
-          </span>
-        )}
       </div>
     </div>
   );
