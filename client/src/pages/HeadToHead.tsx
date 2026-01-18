@@ -41,13 +41,14 @@ function hasGameStarted(player: Player | undefined): boolean {
 }
 
 // Compact game info strip component
-function GameStrip({ game, muted = false, forceLive = false }: { game?: GameInfo | null; muted?: boolean; forceLive?: boolean }) {
+function GameStrip({ game, muted = false }: { game?: GameInfo | null; muted?: boolean }) {
   if (!game) {
     return <span className="text-slate-600" style={{ fontSize: '10px', lineHeight: '14px' }}>No game</span>;
   }
 
   const kickoff = new Date(game.kickoffUtc);
-  const isLive = forceLive || game.gameStatus === 'in_progress' || game.gameStatus === 'IN_PROGRESS';
+  // Only use actual game status - no forceLive override
+  const isLive = game.gameStatus === 'in_progress' || game.gameStatus === 'IN_PROGRESS';
   const isFinal = game.gameStatus === 'final' || game.gameStatus === 'FINAL';
   
   const formatKickoff = () => {
@@ -503,15 +504,14 @@ export default function HeadToHead() {
               {SLOT_ORDER.map((slot) => {
                 const player = team1Starters.find(p => p.slot === slot);
                 const opponent = team2Starters.find(p => p.slot === slot);
-                // Only show winning/losing when both players' games have started
+                // Check actual game status - only IN_PROGRESS gets green styling
+                const gameStatus = player?.game?.gameStatus?.toLowerCase();
+                const isLive = gameStatus === 'in_progress';
                 const bothStarted = hasGameStarted(player) && hasGameStarted(opponent);
                 const winning = bothStarted && player && opponent && player.points > opponent.points;
-                const debugLiveIndex = getDebugLiveIndex(team1Starters);
-                const playerIndex = team1Starters.findIndex(p => p.slot === slot);
-                const isLive = isPlayerLive(player, debugLive, debugLiveIndex, playerIndex);
                 
-                // Row background: live or winning only (no red for losing)
-                const rowBg = isLive ? 'bg-green-500/10' : winning ? 'bg-green-500/5' : '';
+                // Row background: ONLY live gets green (not winning)
+                const rowBg = isLive ? 'bg-green-500/10' : '';
                 
                 return (
                   <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${rowBg}`}>
@@ -522,7 +522,7 @@ export default function HeadToHead() {
                       {player ? (
                         <div>
                           <div className={isLive ? 'text-green-400' : 'text-white'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                          <GameStrip game={player.game} forceLive={isLive} />
+                          <GameStrip game={player.game} />
                           {hasGameStarted(player) && player.statLine && (
                             <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
                               {player.statLine}
@@ -547,7 +547,8 @@ export default function HeadToHead() {
                 </div>
                 <div className="divide-y divide-slate-800/20 bg-slate-900/30">
                   {data.team1.bench.map((player, idx) => {
-                    const isLive = isPlayerLive(player, debugLive, 0, idx === 0 ? 0 : -1);
+                    const gameStatus = player?.game?.gameStatus?.toLowerCase();
+                    const isLive = gameStatus === 'in_progress';
                     return (
                       <div key={idx} className={`px-4 py-2.5 flex items-center justify-between ${isLive ? 'bg-green-500/5' : ''}`}>
                         <div className="flex items-center gap-3">
@@ -556,7 +557,7 @@ export default function HeadToHead() {
                           </div>
                           <div>
                             <div className={isLive ? 'text-green-400' : 'text-slate-400'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                            <GameStrip game={player.game} muted={!isLive} forceLive={isLive} />
+                            <GameStrip game={player.game} muted={!isLive} />
                             {hasGameStarted(player) && player.statLine && (
                               <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
                                 {player.statLine}
@@ -594,15 +595,14 @@ export default function HeadToHead() {
               {SLOT_ORDER.map((slot) => {
                 const player = team2Starters.find(p => p.slot === slot);
                 const opponent = team1Starters.find(p => p.slot === slot);
-                // Only show winning/losing when both players' games have started
+                // Check actual game status - only IN_PROGRESS gets green styling
+                const gameStatus = player?.game?.gameStatus?.toLowerCase();
+                const isLive = gameStatus === 'in_progress';
                 const bothStarted = hasGameStarted(player) && hasGameStarted(opponent);
                 const winning = bothStarted && player && opponent && player.points > opponent.points;
-                const debugLiveIndex = getDebugLiveIndex(team2Starters);
-                const playerIndex = team2Starters.findIndex(p => p.slot === slot);
-                const isLive = isPlayerLive(player, debugLive, debugLiveIndex, playerIndex);
                 
-                // Row background: live or winning only (no red for losing)
-                const rowBg = isLive ? 'bg-green-500/10' : winning ? 'bg-green-500/5' : '';
+                // Row background: ONLY live gets green (not winning)
+                const rowBg = isLive ? 'bg-green-500/10' : '';
                 
                 return (
                   <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${rowBg}`}>
@@ -613,7 +613,7 @@ export default function HeadToHead() {
                       {player ? (
                         <div>
                           <div className={isLive ? 'text-green-400' : 'text-white'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                          <GameStrip game={player.game} forceLive={isLive} />
+                          <GameStrip game={player.game} />
                           {hasGameStarted(player) && player.statLine && (
                             <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
                               {player.statLine}
@@ -638,7 +638,8 @@ export default function HeadToHead() {
                 </div>
                 <div className="divide-y divide-slate-800/20 bg-slate-900/30">
                   {data.team2.bench.map((player, idx) => {
-                    const isLive = isPlayerLive(player, debugLive, 0, idx === 0 ? 0 : -1);
+                    const gameStatus = player?.game?.gameStatus?.toLowerCase();
+                    const isLive = gameStatus === 'in_progress';
                     return (
                       <div key={idx} className={`px-4 py-2.5 flex items-center justify-between ${isLive ? 'bg-green-500/5' : ''}`}>
                         <div className="flex items-center gap-3">
@@ -647,7 +648,7 @@ export default function HeadToHead() {
                           </div>
                           <div>
                             <div className={isLive ? 'text-green-400' : 'text-slate-400'} style={{ fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 500 }}>{player.displayName}</div>
-                            <GameStrip game={player.game} muted={!isLive} forceLive={isLive} />
+                            <GameStrip game={player.game} muted={!isLive} />
                             {hasGameStarted(player) && player.statLine && (
                               <div className={`mt-0.5 ${isLive ? 'text-green-400/70' : 'text-slate-500'}`} style={{ fontSize: '9px', lineHeight: '12px' }}>
                                 {player.statLine}
