@@ -136,11 +136,9 @@ function PlayerPoints({
   const showPoints = gameStarted || player.points !== 0;
   const pointsValue = Math.round(player.points);
   
-  // Determine color based on state (no red for losing - keep neutral)
+  // Determine color based on state - only IN_PROGRESS gets green
   let colorClass = muted ? 'text-slate-500' : 'text-white';
   if (isLive) {
-    colorClass = 'text-green-400';
-  } else if (winning) {
     colorClass = 'text-green-400';
   } else if (!showPoints) {
     colorClass = 'text-slate-700';
@@ -510,8 +508,8 @@ export default function HeadToHead() {
                 const playerIndex = team1Starters.findIndex(p => p.slot === slot);
                 const isLive = isPlayerLive(player, debugLive, debugLiveIndex, playerIndex);
                 
-                // Row background: live or winning only (no red for losing)
-                const rowBg = isLive ? 'bg-green-500/10' : winning ? 'bg-green-500/5' : '';
+                // Row background: only IN_PROGRESS gets green
+                const rowBg = isLive ? 'bg-green-500/10' : '';
                 
                 return (
                   <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${rowBg}`}>
@@ -601,8 +599,8 @@ export default function HeadToHead() {
                 const playerIndex = team2Starters.findIndex(p => p.slot === slot);
                 const isLive = isPlayerLive(player, debugLive, debugLiveIndex, playerIndex);
                 
-                // Row background: live or winning only (no red for losing)
-                const rowBg = isLive ? 'bg-green-500/10' : winning ? 'bg-green-500/5' : '';
+                // Row background: only IN_PROGRESS gets green
+                const rowBg = isLive ? 'bg-green-500/10' : '';
                 
                 return (
                   <div key={slot} className={`px-4 py-2.5 flex items-center justify-between ${rowBg}`}>
